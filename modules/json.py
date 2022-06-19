@@ -1,12 +1,13 @@
-from typing import Any, Union, Optional
+from typing import Any, Optional, Union
 import orjson
 
-class json:
+class Json:
     """
     基於orjson的改良版本。
     """
-    @staticmethod
-    def dumps(data: Any, option: Optional[int]=orjson.OPT_INDENT_2) -> str:
+    def dumps(data: Any,
+        option: int=orjson.OPT_INDENT_2
+    ) -> str:
         """
         將`data`轉換為字串。
         
@@ -19,7 +20,6 @@ class json:
         """
         return orjson.dumps(data, option=option).decode('utf-8')
 
-    @staticmethod
     def loads(data: Union[bytes, bytearray, memoryview, str]) -> Any:
         """
         將`data`轉換為資料。
@@ -30,9 +30,12 @@ class json:
         return: :class:`Any`
         """
         return orjson.loads(data)
-    
-    @staticmethod
-    def dump(file: str, data: Any, option: Optional[int]) -> None:
+
+    def dump(
+        file: str,
+        data: Any,
+        option: Optional[int]
+    ) -> None:
         """
         將`data`儲存於`file`中。
         
@@ -48,8 +51,7 @@ class json:
         with open(file, mode='wb') as in_file:
             in_file.write(orjson.dumps(data, option=option))
             in_file.close()
-    
-    @staticmethod
+
     def load(file: str) -> Any:
         """
         從`file`中讀取資料。
