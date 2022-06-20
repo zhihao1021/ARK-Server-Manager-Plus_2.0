@@ -2,7 +2,7 @@ from datetime import time as d_time, timedelta as d_timedelta, timezone as d_tim
 from filelock import FileLock
 from modules.json import Json
 from modules.threading import Thread
-from os.path import getmtime
+from os.path import getmtime, isfile
 from time import sleep
 
 _FILE_PATH = "config.json"
@@ -11,6 +11,15 @@ _lock = FileLock(_LOCK_PATH)
 
 _CONFIG: dict
 modify_time = 0
+
+def _gen_config():
+    _lock_e = FileLock("config-example.json.lock")
+    _lock_e.acquire()
+    EXAMPLE_DATA = Json.load("config-example.json")
+    _lock_e.release()
+    _lock.acquire()
+    Json.dump("config.json", EXAMPLE_DATA)
+    _lock.release()
 
 class _Discord_Config(dict):
     token: str
@@ -155,6 +164,9 @@ def auto_update():
             Config.update()
             modify_time = getmtime("config.json")
         sleep(1)
+
+if not isfile(_FILE_PATH):
+    _gen_config()
 
 auto_update_thread = Thread(target=auto_update, name="ConfigAutoUpdateThread")
 auto_update_thread.start()
