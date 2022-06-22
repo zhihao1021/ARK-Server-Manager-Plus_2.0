@@ -56,6 +56,7 @@ class Custom_Client(Client):
     async def chat_update(self):
         logger.info("chat_update Start.")
         while True:
+            print(Config.servers[0].key)
             for server_config in Config.servers:
                 rcon_session: Rcon_Session = server_config.rcon_session
                 mes = rcon_session.get(TAG_DISCORD)

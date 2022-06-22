@@ -21,5 +21,5 @@ if __name__ == "__main__":
     discord_thread = Thread(target=client.run, name="Discord_Bot")
     discord_thread.start()
     while True:
-        logger.debug(f"Thread:{''.join([thread.name for thread in threading.enumerate()])}")
-        sleep(1)
+        logger.debug(f"Thread:{' '.join([thread.name for thread in threading.enumerate()])}")
+        sleep(10)
