@@ -415,7 +415,7 @@ class Rcon_Session():
                 if save_finish["args"].get("type") == "id_tag" and save_finish["args"].get("content") == "Finish":
                     break
             sleep(_WHILE_SLEEP)
-        self.add("DoExit")
+        self.add("DoExit", TAG_SYSTEM)
 
         # 重啟
         if mode < MODE_RESTART:
