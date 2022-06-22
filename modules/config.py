@@ -1,25 +1,29 @@
 from datetime import time as d_time, timedelta as d_timedelta, timezone as d_timezone
-from filelock import FileLock
+import logging
 from modules.json import Json
 from modules.threading import Thread
 from os.path import getmtime, isfile
 from time import sleep
+from typing import Union
+from threading import current_thread
 
+logger = logging.getLogger("main")
 _FILE_PATH = "config.json"
-_LOCK_PATH = "config.json.lock"
-_lock = FileLock(_LOCK_PATH)
 
 _CONFIG: dict
 modify_time = 0
 
 def _gen_config():
-    _lock_e = FileLock("config-example.json.lock")
-    _lock_e.acquire()
-    EXAMPLE_DATA = Json.load("config-example.json")
-    _lock_e.release()
-    _lock.acquire()
-    Json.dump("config.json", EXAMPLE_DATA)
-    _lock.release()
+    with open("config-example.json") as example_file:
+        EXAMPLE_DATA = example_file.read()
+    with open("config.json", mode="w", encoding="utf-8") as config_file:
+        config_file.write(EXAMPLE_DATA)
+    Config.update()
+    sleep(1)
+    logger.critical("config.json not found.")
+    logger.info("Generate a new config.json from config-example.json.")
+    Config.ready(False)
+    current_thread().stop()
 
 class _Discord_Config(dict):
     token: str
@@ -69,6 +73,7 @@ class _Ark_Server(dict):
     save: str
     restart: str
     clear_dino: bool
+    rcon_session = None
     def __init__(self, _config: dict) -> None:
         for item in _config.items():
             self[item[0]] = item[1]
@@ -128,12 +133,14 @@ class _Other_Setting(dict):
     low_battery: int
     m_filter_tables: dict[dict[list[str]]] = {}
     log_level: str
+    message: dict[str] = {}
     def __init__(self, _config: dict):
         for item in _config.items():
             self[item[0]] = item[1]
         self.low_battery = _config["low_battery"]
         self.m_filter_tables = _config["m_filter_tables"].copy()
         self.log_level = _config["log_level"]
+        self.message = _config["message"]
 
 class Config:
     discord: _Discord_Config
@@ -141,32 +148,42 @@ class Config:
     web_console: _Web_Console
     time_setting: _Time_Setting
     other_setting: _Other_Setting
+    updated: bool = False
+    readied: Union[bool, None] = None
 
     @classmethod
     def update(self):
         global _CONFIG
-        _lock.acquire()
         _CONFIG = Json.load(_FILE_PATH)
-        _lock.release()
 
         self.config = _CONFIG.copy()
         self.discord = _Discord_Config(_CONFIG["discord"])
         for _config in _CONFIG["servers"]:
             self.servers.append(_Ark_Server(_config))
+            if self.readied and self.servers[-1].rcon_session == None:
+                from modules.rcon import Rcon_Session
+                Rcon_Session()
         self.web_console = _Web_Console(_CONFIG["web_console"])
         self.time_setting = _Time_Setting(_CONFIG["time_setting"])
         self.other_setting = _Other_Setting(_CONFIG["other_setting"])
+        self.updated = True
+
+    @classmethod
+    def ready(self, value: bool):
+        self.readied = value
 
 def auto_update():
     global modify_time
+    if not isfile(_FILE_PATH):
+        _gen_config()
+    else:
+        Config.update()
+    Config.ready(True)
     while True:
         if getmtime("config.json") != modify_time:
             Config.update()
             modify_time = getmtime("config.json")
         sleep(1)
-
-if not isfile(_FILE_PATH):
-    _gen_config()
 
 auto_update_thread = Thread(target=auto_update, name="ConfigAutoUpdateThread")
 auto_update_thread.start()

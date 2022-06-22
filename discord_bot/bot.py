@@ -1,16 +1,19 @@
+from asyncio import sleep as a_sleep
 from discord import Message
 from discord.client import Client
 import logging
 from modules.config import Config, _Ark_Server
-from modules.rcon import Rcon_Session
+from modules.rcon import Rcon_Session, TAG_DISCORD
+from time import time
+from typing import Union
 
 logger = logging.getLogger("main")
 
-def _search_config(channel_id: int):
+def _search_rcon(channel_id: int) -> Union[Rcon_Session, None]:
     server_config: _Ark_Server
     for server_config in Config.servers:
         if channel_id == server_config.discord.chat_channel:
-            return server_config
+            return server_config.rcon_session
     return None
 
 class Custom_Client(Client):
@@ -25,22 +28,84 @@ class Custom_Client(Client):
         else:
             logger.warning("Discord Bot Reonnected!")
 
+    async def state_update(self):
+        server_config: _Ark_Server
+        while True:
+            for server_config in Config.servers:
+                rcon_session: Rcon_Session = server_config.rcon_session
+                state_channel = self.get_channel(server_config.discord.state_channel)
+                # :red_circle: :green_circle: :orange_circle:
+                if rcon_session.rcon_alive:
+                    state_message = ":green_circle: 運作中"
+                else:
+                    if rcon_session.server_alive:
+                        if rcon_session.server_first_connect:
+                            state_message = ":orange_circle: 正在啟動中"
+                        else:
+                            state_message = ":warning: RCON失去連線"
+                    else:
+                        state_message = ":red_circle: 未開啟"
+                await state_channel.edit(name=state_message)
+            await a_sleep(60)
+
+    async def chat_update(self):
+        while True:
+            for server_config in Config.servers:
+                rcon_session: Rcon_Session = server_config.rcon_session
+                start_time = time()
+                message_list = {}
+                while time() - start_time < 1:
+                    mes = rcon_session.get(TAG_DISCORD)
+                    arg = mes.get("args")
+                    if arg["type"] == "chat":
+                        message_list[int(arg["target"])] = mes.get("reply")
+                    elif arg["type"] == "user_command":
+                        channel = self.get_channel(int(arg["target"]))
+                        await channel.send(mes.get("reply"))
+                for channel_id, message in message_list.items():
+                    channel = self.get_channel(channel_id)
+                    await channel.send(message)
+            # await a_sleep(1)
+
     async def on_message(self, message: Message):
         if message.author == self.user: return
-        if not _search_config(message.channel.id): return
+        if _search_rcon(message.channel.id) == None: return
         if Config.discord.admin_role not in [role.id for role in message.author.roles]: return
+
         content = message.content
         logger.info(f"[{message.channel.name}][{message.author.display_name}]{content}")
+
+        # 判斷並移除開頭
         if not content.startswith(Config.discord.prefixs): return
         for prefix in Config.discord.prefixs:
             if content.startswith(prefix):
                 content = content[len(prefix):]
                 break
+        # 指令切分
         content_list = content.split(" ")
+        if content_list[0] == "del":
+            await message.delete()
+            content_list = content_list[1:]
         if content_list[0] == "c":
+            rcon_session = _search_rcon(message.channel.id)
+            delay = 0
+            try: delay = int(content_list[2])
+            except ValueError: pass
+            except IndexError: pass
             if content_list[1] == "start":
-                pass
-        
+                rcon_session.start(TAG_DISCORD)
+            elif content_list[1] == "stop":
+                rcon_session.stop(TAG_DISCORD, delay)
+            elif content_list[1] == "save":
+                rcon_session.save(TAG_DISCORD, delay)
+            elif content_list[1] == "restart":
+                rcon_session.restart(TAG_DISCORD, delay)
+            else:
+                if message.author.dm_channel.can_send():
+                    target = message.author.dm_channel.id
+                else:
+                    target = message.channel.id
+                rcon_session.add(" ".join(content_list[1:]), TAG_DISCORD, {"type": "user_command", "target": target})
     
     async def on_disconnect(self):
         logger.warning("Discord Bot Disconnected!")

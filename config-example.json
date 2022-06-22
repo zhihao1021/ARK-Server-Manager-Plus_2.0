@@ -84,6 +84,12 @@
         ]
       }
     },
-    "log_level": "INFO"
+    "log_level": "INFO",
+    "message": {
+      "save": "伺服器將於 $TIME 分鐘後存檔。\nServer will save in $TIME min.",
+      "stop": "伺服器將於 $TIME 分鐘後關閉。\nServer will shutdown in $TIME min.",
+      "restart": "伺服器將於 $TIME 分鐘後重啟。\nServer will restart in $TIME min.",
+      "saving": "儲存中...\nSaving..."
+    }
   }
 }

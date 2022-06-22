@@ -1,11 +1,11 @@
 from datetime import time
 import logging
 from logging.config import dictConfig
-from logging.handlers import TimedRotatingFileHandler
 from modules.config import Config
 from modules.datetime import My_Datetime
 from os import mkdir
 from os.path import isdir
+from time import sleep
 
 class DatetimeFormatter(logging.Formatter):
     def format(self, record):
@@ -14,6 +14,7 @@ class DatetimeFormatter(logging.Formatter):
         return super().format(record)
 
 def set_logging():
+    while not Config.updated: sleep(0.1)
     midnight = time(0, 0, 0, 0, Config.time_setting.time_zone)
     if not isdir("logs"):
         mkdir("logs")

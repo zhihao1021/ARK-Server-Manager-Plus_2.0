@@ -2,6 +2,8 @@ import logging
 from modules.config import Config, _Ark_Server
 from modules.queue import Queue
 from modules.threading import Thread
+from os import system
+from os.path import join
 from rcon.source import Client
 from subprocess import Popen, PIPE, DEVNULL
 from time import time, sleep
@@ -11,9 +13,15 @@ logger = logging.getLogger("main")
 
 _WHILE_SLEEP = 0.2
 _TAG_LIST = ["Discord", "Web", "System"]
-DISCORD = 0
-WEB = 1
-SYSTEM = 2
+TAG_DISCORD = 0
+TAG_WEB = 1
+TAG_SYSTEM = 2
+
+_MODE_LIST = ["save", "stop", "restart"]
+_MODE_LIST_ZH = ["儲存", "關閉", "重啟"]
+MOD_SAVE = 0
+MOD_STOP = 1
+MOD_RESTART = 2
 
 def tag_verify(tag: int) -> bool:
     """
@@ -78,7 +86,7 @@ class Rcon_Session():
     """
     def __init__(
         self,
-        num: int
+        num: int = -1
     ) -> None:
         """
         初始化`Rcon_Session()`
@@ -95,16 +103,20 @@ class Rcon_Session():
 
         self.rcon_alive = False
         self.server_alive = False
-        server_config: _Ark_Server = Config.servers[num]
-        session_thread = Thread(target=self._session, name=f"RCON_{server_config.display_name}", args=(server_config,))
+        self.server_first_connect = True
+        self.server_config: _Ark_Server = Config.servers[num]
+        session_thread = Thread(target=self._session, name=f"RCON_{self.server_config.display_name}")
         session_thread.start()
         Config.servers[num].rcon_update(self)
+
+        self.save_thread = Thread()
 
     def add(
         self,
         command: str,
         tag: int,
-        args: Optional[dict]=None
+        args: Optional[dict]=None,
+        reply: bool=True
     ) -> None:
         """
         新增指令至執行佇列。
@@ -115,23 +127,45 @@ class Rcon_Session():
             發起者識別標籤。
         args: :class:`dict`
             附加自訂參數。
+        reply: :class:`bool`
+            是否回傳伺服器回覆內容。
 
         return: :class:`None`
         """
         if not tag_verify(tag):
             return None
+        if not self.rcon_alive:
+            if tag == TAG_DISCORD:
+                self.queues[TAG_DISCORD].put(
+                    {
+                        "reply": f"[{self.server_config.display_name}]RCON 未連線，無法發送指令。",
+                        "args": {
+                            "type": "chat",
+                            "target": self.server_config.discord.chat_channel
+                        }
+                    }
+                )
+            return
         self.in_queue.put(
             {
                 "command": command,
                 "tag": tag,
+                "need_reply": reply,
                 "args": args
             }
         )
         """
+        Discord Args:
         args:
         {
-            "type": "",
-            "target": 0
+            "type": "",   #chat, user_command
+            "target": 0   #Target Channel
+        }
+        System Args:
+        args:
+        {
+            "type": "",     #id_tag
+            "content": ""   #Custom Content
         }
         """
 
@@ -154,11 +188,171 @@ class Rcon_Session():
             return None
         return target_queue.get()
     
+    def save(
+        self,
+        tag: int,
+        delay: int = 0
+    ) -> None:
+        return self._save(tag, MOD_SAVE, delay)
+
+    def stop(
+        self,
+        tag: int,
+        delay: int = 0
+    ) -> None:
+        return self._save(tag, MOD_STOP, delay)
+    
+    def restart(
+        self,
+        tag: int,
+        delay: int = 0
+    ) -> None:
+        return self._save(tag, MOD_RESTART, delay)
+
+    def start(
+        self,
+        tag: int
+    ) -> None:
+        if self.server_alive:
+            if tag == TAG_DISCORD:
+                self.queues[TAG_DISCORD].put(
+                    {
+                        "reply": f"[{self.server_config.display_name}]伺服器已經啟動了。",
+                        "args": {
+                            "type": "chat",
+                            "target": self.server_config.discord.chat_channel
+                        }
+                    }
+                )
+            return
+        _cmd_path = join(self.server_config.dir_path, 'ShooterGame\\Saved\\Config\\WindowsServer\\RunServer.cmd')
+        with open(_cmd_path, mode="r", encoding="utf-8") as _cmd_file:
+            command_content = _cmd_file.read()
+            _cmd_file.close()
+        location_s = command_content.find("?MultiHome=") + 11
+        location_e = location_s + command_content[location_s:].find("?")
+        original_config = f"?MultiHome={command_content[location_s:location_e]}"
+        command_content = command_content.replace(original_config, "?MultiHome=0.0.0.0")
+        with open(_cmd_path, mode="w", encoding="utf-8") as _cmd_file:
+            _cmd_file.write(command_content)
+            _cmd_file.close()
+        system("start cmd /c \"" + _cmd_path + "\"")
+        self.server_first_connect = True
+    
+    def clear(
+        self,
+        tag: int
+    ) -> None:
+        if not tag_verify(tag):
+            return 
+        self.in_queue.clear()
+        if self.save_thread.is_alive():
+            self.save_thread.stop()
+        logger.warning(f"清除所有指令。(來自{_TAG_LIST[tag]})")
+    
+    def _save(
+        self,
+        tag: int,
+        mode: int,
+        delay: int
+    ) -> None:
+        if not tag_verify(tag):
+            return
+        if self.rcon_alive and not self.save_thread.is_alive():
+            self.save_thread = Thread(target=self._save_job, args=(tag, mode, delay), name=f"RCON_{self.server_config.display_name}_{_MODE_LIST[mode].upper()}")
+            self.save_thread.start()
+        elif tag == TAG_DISCORD:
+            if not self.rcon_alive:
+                self.queues[TAG_DISCORD].put(
+                    {
+                        "reply": f"[{self.server_config.display_name}]RCON 未連線，無法{_MODE_LIST_ZH[mode]}。",
+                        "args": {
+                            "type": "chat",
+                            "target": self.server_config.discord.chat_channel
+                        }
+                    }
+                )
+            elif self.save_thread.is_alive():
+                self.queues[TAG_DISCORD].put(
+                    {
+                        "reply": f"[{self.server_config.display_name}]已經正在{_MODE_LIST_ZH[mode]}中。",
+                        "args": {
+                            "type": "chat",
+                            "target": self.server_config.discord.chat_channel
+                        }
+                    }
+                )
+
+    def _save_job(
+        self,
+        tag: int,
+        mode: int,
+        delay: int
+    ) -> None:
+        logger.info(f"From:{_TAG_LIST[tag]} Receive Command:{_MODE_LIST[mode]} {delay}")
+        def _rcon_test():
+            if not self.rcon_alive:
+                self.queues[TAG_DISCORD].put(
+                    {
+                        "reply": f"[{self.server_config.display_name}]儲存失敗: RCON失去連線。",
+                        "args": {
+                            "type": "chat",
+                            "target": self.server_config.discord.chat_channel
+                        }
+                    }
+                )
+                logger.warning("儲存失敗: RCON失去連線。")
+        while delay > 0:
+            _rcon_test()
+            if (delay %5 == 0 and delay <= 30) or delay < 5:
+                self.add(f"Broadcast {Config.other_setting.message[_MODE_LIST[mode]].replace('$TIME', str(delay))}", TAG_SYSTEM, reply=False)
+                _discord_message = f"[{self.server_config.display_name}]".join(Config.other_setting.message[_MODE_LIST[mode]].replace("$TIME", str(delay)).split("\n"))
+                self.queues[TAG_DISCORD].put(
+                    {
+                        "reply": f"[{self.server_config.display_name}]{_discord_message}",
+                        "args": {
+                            "type": "chat",
+                            "target": self.server_config.discord.chat_channel
+                        }
+                    }
+                )
+            sleep(60)
+            delay -= 1
+        self.add(f"Broadcast {Config.other_setting.message['saving'].replace('$TIME', str(delay))}", TAG_SYSTEM, reply=False)
+        _discord_message = f"[{self.server_config.display_name}]".join(Config.other_setting.message["saving"].replace("$TIME", str(delay)).split("\n"))
+        self.queues[TAG_DISCORD].put(
+            {
+                "reply": f"[{self.server_config.display_name}]{_discord_message}",
+                "args": {
+                    "type": "chat",
+                    "target": self.server_config.discord.chat_channel
+                }
+            }
+        )
+        if self.server_config.clear_dino:
+            with open("classlist", mode="r", encoding="0") as class_file:
+                class_list = class_file.read().split("\n")
+            for class_name in class_list:
+                self.add(f"DestroyWildDinoClasses \"{class_name}\" 1", TAG_SYSTEM, reply=False)
+            self.add(f"DestroyWildDinos", TAG_SYSTEM, reply=False)
+            self.add("save", TAG_SYSTEM, {"type": "id_tag", "content": "Finish"})
+        if mode >= MOD_STOP:
+            while True:
+                save_finish = self.get(TAG_SYSTEM)
+                if save_finish != None:
+                    if save_finish.get("type") == "id_tag" and save_finish.get("content") == "Finish":
+                        break
+                sleep(_WHILE_SLEEP)
+            self.add("DoExit")
+        if mode >= MOD_RESTART:
+            while self.server_alive:
+                sleep(_WHILE_SLEEP)
+            self.start(tag)
+    
     def _session(
         self,
-        server_config: _Ark_Server
     ):
-        config = server_config.rcon
+        config = self.server_config.rcon
         while True:
             try:
                 self.in_queue.clear()
@@ -170,6 +364,7 @@ class Rcon_Session():
                 ) as client:
                     self.rcon_alive = True
                     self.server_alive = True
+                    self.server_first_connect = False
                     logger.warning("RCON Connected!")
                     while True:
                         if not self.in_queue.empty():
@@ -179,8 +374,11 @@ class Rcon_Session():
                             reply = client.run(command)
                             requests["reply"] = reply
                             tag = requests["tag"]
+                            need_reply = requests["need_reply"]
                             del requests["tag"]
-                            self.queues[tag].put(requests)
+                            del requests["need_reply"]
+                            if need_reply:
+                                self.queues[tag].put(requests)
                             logger.info(f"From:{_TAG_LIST[tag]} {command} Reply:{reply}")
 
                         # 取得聊天訊息
@@ -210,12 +408,12 @@ class Rcon_Session():
                                         continue
                                     message = f"<{tribe}>{message}"
                                 # 送出訊息
-                                self.queues[DISCORD].put(
+                                self.queues[TAG_DISCORD].put(
                                     {
-                                        "reply": f"[{server_config.display_name}]{message}",
+                                        "reply": f"[{self.server_config.display_name}]{message}",
                                         "args": {
                                             "type": "chat",
-                                            "target": server_config.discord.channel
+                                            "target": self.server_config.discord.chat_channel
                                         }
                                     }
                                 )
@@ -225,14 +423,15 @@ class Rcon_Session():
             except:
                 try:
                     # 閃斷測試
-                    sleep(10)
-                    with Client(
-                        host=config.address,
-                        port=config.port,
-                        timeout=config.timeout,
-                        passwd=config.password
-                    ) as client:
-                        client.run("")
+                    for _ in range(5):
+                        sleep(1)
+                        with Client(
+                            host=config.address,
+                            port=config.port,
+                            timeout=config.timeout,
+                            passwd=config.password
+                        ) as client:
+                            client.run("")
                 except SystemExit:
                     raise SystemExit
                 except:
@@ -240,7 +439,7 @@ class Rcon_Session():
                     logger.warning("RCON Disconnected!")
                     while True:
                         try:
-                            if _ark_is_alive(server_config.dir_path) and not self.server_alive:
+                            if _ark_is_alive(self.server_config.dir_path) and not self.server_alive:
                                 self.server_alive = True
                                 logger.warning("Server Up!")
                             # 嘗試重連
@@ -255,7 +454,7 @@ class Rcon_Session():
                         except SystemExit:
                             raise SystemExit
                         except:
-                            if not _ark_is_alive(server_config.dir_path) and self.server_alive:
+                            if not _ark_is_alive(self.server_config.dir_path) and self.server_alive:
                                 self.server_alive = False
                                 logger.warning("Server Down!")
                         sleep(_WHILE_SLEEP)

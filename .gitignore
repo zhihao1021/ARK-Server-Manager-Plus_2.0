@@ -130,4 +130,5 @@ dmypy.json
 
 config.json
 logs
+discord-logs
 web-logs

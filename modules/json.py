@@ -34,7 +34,7 @@ class Json:
     def dump(
         file: str,
         data: Any,
-        option: Optional[int]
+        option: int = orjson.OPT_INDENT_2
     ) -> None:
         """
         將`data`儲存於`file`中。
