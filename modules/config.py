@@ -62,8 +62,7 @@ class _Discord_Info(dict):
         self.state_channel = _config["state_channel"]
         self.message_forward = _config["message_forward"]
 
-class _Ark_Server():
-    _config: dict
+class _Ark_Server(dict):
     key: str
     local: bool
     dir_path: str
@@ -76,26 +75,22 @@ class _Ark_Server():
     clear_dino: bool
     rcon_session = None
     def __init__(self, _config: dict) -> None:
-        self.update(_config)
+        for item in _config.items():
+            self[item[0]] = item[1]
+        self.key = _config["key"]
+        self.local = _config["local"]
+        self.dir_path = _config["dir_path"]
+        self.file_name = _config["file_name"]
+        self.display_name = _config["display_name"]
+        self.rcon = _Rcon_Info(_config["rcon"])
+        self.discord = _Discord_Info(_config["discord"])
+        self.save = _config["save"]
+        self.restart = _config["restart"]
+        self.clear_dino = _config["clear_dino"]
 
     @classmethod
-    def update(self, _config=None):
-        if _config != None:
-            self._config = _config
-        if Config.readied:
-            _config = self._config
-            self.key = _config["key"]
-            self.local = _config["local"]
-            self.dir_path = _config["dir_path"]
-            self.file_name = _config["file_name"]
-            self.display_name = _config["display_name"]
-            self.rcon = _Rcon_Info(_config["rcon"])
-            self.discord = _Discord_Info(_config["discord"])
-            self.save = _config["save"]
-            self.restart = _config["restart"]
-            self.clear_dino = _config["clear_dino"]
-            from modules.rcon import Rcon_Session
-            self.rcon_session = Rcon_Session(self)
+    def rcon_update(self, rcon_session):
+        self.rcon_session = rcon_session
 
 class _Web_Console(dict):
     host: str
@@ -165,15 +160,14 @@ class Config:
 
         self.config = _CONFIG.copy()
         self.discord = _Discord_Config(_CONFIG["discord"])
-        for i in range(len(_CONFIG["servers"])):
+        i = 0
+        for _config in _CONFIG["servers"]:
             try:
-                self.servers[i].update()
-                print(f"Config update {i} {self.servers[i]}")
-                print(f"Config update {i} {self.servers[i].key}")
+                from modules.rcon import Rcon_Session
+                self.servers[i] = Rcon_Session(self.servers[i])
             except IndexError:
-                self.servers.append(_Ark_Server(_CONFIG["servers"][i]))
-                print(f"Config append {i} {self.servers[i]}")
-            print(self.servers)
+                self.servers.append(_Ark_Server(_config))
+            i += 1
         self.web_console = _Web_Console(_CONFIG["web_console"])
         self.time_setting = _Time_Setting(_CONFIG["time_setting"])
         self.other_setting = _Other_Setting(_CONFIG["other_setting"])
@@ -190,7 +184,6 @@ def auto_update():
     else:
         Config.update()
     Config.ready(True)
-    Config.update()
     while True:
         if getmtime("config.json") != modify_time:
             Config.update()

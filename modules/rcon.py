@@ -94,8 +94,8 @@ class Rcon_Session():
         """
         初始化`Rcon_Session()`
         
-        num: :class:`int`
-            伺服器資料編號
+        server_config: :class:`_Ark_Server`
+            伺服器資料
 
         return: :class:`None`
         """
@@ -112,6 +112,7 @@ class Rcon_Session():
         session_thread.start()
 
         self.save_thread = Thread()
+        print(f"RCON RECEIVE {self.server_config.key}")
 
     def add(
         self,
