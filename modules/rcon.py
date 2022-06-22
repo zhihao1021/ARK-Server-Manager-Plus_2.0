@@ -428,7 +428,8 @@ class Rcon_Session():
         config = self.server_config.rcon
         while True:
             try:
-                self.in_queue.clear()
+                if not self.server_alive:
+                    self.in_queue.clear()
                 with Client(
                     host=config.address,
                     port=config.port,
