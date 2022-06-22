@@ -169,9 +169,11 @@ class Config:
             try:
                 self.servers[i].update()
                 print(f"Config update {i} {self.servers[i]}")
+                print(f"Config update {i} {self.servers[i].key}")
             except IndexError:
                 self.servers.append(_Ark_Server(_CONFIG["servers"][i]))
                 print(f"Config append {i} {self.servers[i]}")
+                print(f"Config update {i} {self.servers[i].key}")
             print(self.servers)
         self.web_console = _Web_Console(_CONFIG["web_console"])
         self.time_setting = _Time_Setting(_CONFIG["time_setting"])
