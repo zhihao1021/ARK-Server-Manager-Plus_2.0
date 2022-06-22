@@ -63,7 +63,10 @@ class Custom_Client(Client):
                     if arg["type"] == "chat":
                         message_list[int(arg["target"])] = mes.get("reply")
                     elif arg["type"] == "user_command":
-                        channel = self.get_channel(int(arg["target"]))
+                        if type(arg["target"]) == str or type(arg["target"]) == int:
+                            channel = self.get_channel(int(arg["target"]))
+                        else:
+                            channel = arg["target"]
                         await channel.send(mes.get("reply"))
                 for channel_id, message in message_list.items():
                     channel = self.get_channel(channel_id)
@@ -105,10 +108,11 @@ class Custom_Client(Client):
             elif content_list[1] == "restart":
                 rcon_session.restart(TAG_DISCORD, delay)
             else:
-                if message.author.dm_channel.can_send():
-                    target = message.author.dm_channel.id
-                else:
-                    target = message.channel.id
+                target = message.author
+                # if message.author.dm_channel.can_send():
+                #     target = message.author.dm_channel.id
+                # else:
+                #     target = message.channel.id
                 rcon_session.add(" ".join(content_list[1:]), TAG_DISCORD, {"type": "user_command", "target": target})
     
     async def on_disconnect(self):
