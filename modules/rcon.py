@@ -147,6 +147,7 @@ class Rcon_Session():
                     }
                 )
             return
+        logger.debug(f"Receive Command: {command}")
         self.in_queue.put(
             {
                 "command": command,
@@ -360,7 +361,7 @@ class Rcon_Session():
                 with Client(
                     host=config.address,
                     port=config.port,
-                    timeout=config.timeout,
+                    # timeout=config.timeout,
                     passwd=config.password
                 ) as client:
                     self.rcon_alive = True
@@ -459,6 +460,7 @@ class Rcon_Session():
                                 self.server_alive = False
                                 logger.warning("Server Down!")
                         sleep(_WHILE_SLEEP)
+            sleep(_WHILE_SLEEP)
 
 # if (remove_message(conv_string)): 
 # if conv_string.startswith("部落"):
