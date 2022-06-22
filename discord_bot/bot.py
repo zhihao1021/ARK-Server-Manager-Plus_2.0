@@ -97,17 +97,21 @@ class Custom_Client(Client):
         if content_list[0] == "c":
             rcon_session = _search_rcon(message.channel.id)
             delay = 0
+            reason = ""
             try: delay = int(content_list[2])
+            except ValueError: pass
+            except IndexError: pass
+            try: reason = int(content_list[3])
             except ValueError: pass
             except IndexError: pass
             if content_list[1] == "start":
                 rcon_session.start(TAG_DISCORD)
             elif content_list[1] == "stop":
-                rcon_session.stop(TAG_DISCORD, delay)
+                rcon_session.stop(TAG_DISCORD, delay=delay, reason=reason)
             elif content_list[1] == "save":
-                rcon_session.save(TAG_DISCORD, delay)
+                rcon_session.save(TAG_DISCORD, delay=delay, reason=reason)
             elif content_list[1] == "restart":
-                rcon_session.restart(TAG_DISCORD, delay)
+                rcon_session.restart(TAG_DISCORD, delay=delay, reason=reason)
             else:
                 target = message.author
                 # if message.author.dm_channel.can_send():

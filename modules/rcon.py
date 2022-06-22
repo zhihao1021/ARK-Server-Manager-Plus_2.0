@@ -366,7 +366,7 @@ class Rcon_Session():
 
         # 存檔
         if self.server_config.clear_dino:
-            with open("classlist", mode="r", encoding="0") as class_file:
+            with open("classlist", mode="r", encoding="utf-8") as class_file:
                 class_list = class_file.read().split("\n")
             for class_name in class_list:
                 self.add(f"DestroyWildDinoClasses \"{class_name}\" 1", TAG_SYSTEM, reply=False)
