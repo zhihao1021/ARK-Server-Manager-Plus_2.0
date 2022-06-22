@@ -61,7 +61,7 @@ class Custom_Client(Client):
                 rcon_session: Rcon_Session = server_config.rcon_session
                 mes = rcon_session.get(TAG_DISCORD)
                 arg = mes["args"]
-                logger.debug(arg)
+                logger.debug(f"Arg:{arg}")
                 if arg["type"] == "chat":
                     channel = self.get_channel(arg["target"])
                     await channel.send(mes["reply"])

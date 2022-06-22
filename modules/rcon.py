@@ -424,7 +424,8 @@ class Rcon_Session():
                         sleep(_WHILE_SLEEP)
             except SystemExit:
                 raise SystemExit
-            except:
+            except Exception as e:
+                logger.debug(f"RCON Exception: {e}")
                 try:
                     # 閃斷測試
                     for _ in range(5):
@@ -438,8 +439,7 @@ class Rcon_Session():
                             client.run("")
                 except SystemExit:
                     raise SystemExit
-                except Exception as e:
-                    logger.debug(f"RCON Exception: {e}")
+                except:
                     self.rcon_alive = False
                     logger.warning("RCON Disconnected!")
                     while True:
