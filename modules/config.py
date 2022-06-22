@@ -63,7 +63,7 @@ class _Discord_Info(dict):
         self.message_forward = _config["message_forward"]
 
 class _Ark_Server():
-    _config: dict = {}
+    _config: dict
     key: str
     local: bool
     dir_path: str
@@ -76,11 +76,12 @@ class _Ark_Server():
     clear_dino: bool
     rcon_session = None
     def __init__(self, _config: dict) -> None:
-        self._config = _config
-        self.update()
+        self.update(_config)
 
     @classmethod
-    def update(self):
+    def update(self, _config=None):
+        if _config != None:
+            self._config = _config
         if Config.readied:
             _config = self._config
             for item in _config.items():
