@@ -112,7 +112,6 @@ class Rcon_Session():
         session_thread.start()
 
         self.save_thread = Thread()
-        print(f"RCON RECEIVE {self.server_config.key}")
 
     def add(
         self,
