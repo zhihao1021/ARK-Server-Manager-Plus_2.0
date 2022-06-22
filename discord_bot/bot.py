@@ -4,7 +4,7 @@ from discord.client import Client
 import logging
 from modules.config import Config, _Ark_Server
 from modules.rcon import Rcon_Session, TAG_DISCORD
-from modules.threading import restart
+from modules.threading import restart, stop
 from time import time
 from typing import Union
 
@@ -30,6 +30,8 @@ class Custom_Client(Client):
             logger.warning("Discord Bot Connected!")
             self.bg_task_1 = self.loop.create_task(self.state_update())
             self.bg_task_2 = self.loop.create_task(self.chat_update())
+            self.main_thread_command = ""
+            self.main_thread_command_time = 0
         else:
             logger.warning("Discord Bot Reonnected!")
 
@@ -109,14 +111,17 @@ class Custom_Client(Client):
             try: reason = int(content_list[3])
             except ValueError: pass
             except IndexError: pass
+            logger.info(f"Receive Command:{content_list}")
             if content_list[1] == "start":
                 rcon_session.start(TAG_DISCORD)
             elif content_list[1] == "stop":
                 rcon_session.stop(TAG_DISCORD, backup=backup, delay=delay, reason=reason)
-            elif content_list[1] == "save":
+            elif content_list[1] == "saveworld":
                 rcon_session.save(TAG_DISCORD, backup=backup, delay=delay, reason=reason)
             elif content_list[1] == "restart":
                 rcon_session.restart(TAG_DISCORD, backup=backup, delay=delay, reason=reason)
+            elif content_list[1] == "clear":
+                rcon_session.clear(TAG_DISCORD)
             else:
                 target = message.author
                 # if message.author.dm_channel.can_send():
@@ -125,8 +130,14 @@ class Custom_Client(Client):
                 #     target = message.channel.id
                 rcon_session.add(" ".join(content_list[1:]), TAG_DISCORD, {"type": "user_command", "target": target})
         elif content_list[0] == "m":
-            if content_list[1] == "restart":
-                restart()
+            if content_list[1] == "config" and time() - self.main_thread_command_time < 15:
+                if self.main_thread_command == "stop":
+                    stop()
+                elif self.main_thread_command == "restart":
+                    restart()
+            else:
+                self.main_thread_command = content_list[1]
+                self.main_thread_command_time = time()
         elif content_list[0] == "debug" and message.author.id == 302774180611358720:
             await self._state_update()
     

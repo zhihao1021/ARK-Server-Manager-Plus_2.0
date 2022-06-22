@@ -30,5 +30,12 @@ def restart():
     ctypes.pythonapi.PyThreadState_SetAsyncExc(thr.ident, 0)
     raise SystemError("PyThreadState_SetAsyncExc failed")
 
+def stop():
+    thr = threading.main_thread()
+    if not thr.is_alive() or thr.ident == None: raise threading.ThreadError("The thread is not active.")
+    elif ctypes.pythonapi.PyThreadState_SetAsyncExc(thr.ident, ctypes.py_object(SystemExit)) == 1: return
+    ctypes.pythonapi.PyThreadState_SetAsyncExc(thr.ident, 0)
+    raise SystemError("PyThreadState_SetAsyncExc failed")
+
 _auto_kill_thread = Thread(target=_auto_kill, name="AutoKillThread")
 _auto_kill_thread.start()
