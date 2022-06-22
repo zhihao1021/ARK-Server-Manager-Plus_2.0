@@ -83,8 +83,10 @@ class _Ark_Server():
     def update(self, _config=None):
         if _config != None:
             self._config = _config
+            print(f"ARK COnfig 2 {self._config}")
         if Config.readied:
             _config = self._config
+            print(f"ARK COnfig 3 {_config}")
             self.key = _config["key"]
             self.local = _config["local"]
             self.dir_path = _config["dir_path"]
@@ -173,6 +175,7 @@ class Config:
             except IndexError:
                 self.servers.append(_Ark_Server(_CONFIG["servers"][i]))
                 print(f"Config append {i} {_CONFIG['servers'][i]}")
+            print(self.servers)
         self.web_console = _Web_Console(_CONFIG["web_console"])
         self.time_setting = _Time_Setting(_CONFIG["time_setting"])
         self.other_setting = _Other_Setting(_CONFIG["other_setting"])
