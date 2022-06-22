@@ -118,7 +118,7 @@ class Rcon_Session():
         self,
         command: str,
         tag: int,
-        args: Optional[dict]=None,
+        args: Optional[dict]={},
         reply: bool=True
     ) -> None:
         """
@@ -446,7 +446,7 @@ class Rcon_Session():
                             tag = requests["tag"]
                             need_reply = requests["need_reply"]
                             command = requests["command"]
-                            logger.info(f"From:{_TAG_LIST[tag]} Receive Command:{command}")
+                            logger.info(f"From:{_TAG_LIST[tag]} Receive Command:{command} Args:{requests.get('args', 'No Args')}")
                             reply = client.run(command)
                             requests["reply"] = reply
                             del requests["tag"]
