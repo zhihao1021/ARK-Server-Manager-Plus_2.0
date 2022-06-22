@@ -261,6 +261,16 @@ class Rcon_Session():
         if self.save_thread.is_alive():
             self.save_thread.stop()
         logger.warning(f"清除所有指令。(來自{_TAG_LIST[tag]})")
+        if tag == TAG_DISCORD:
+            self.queues[TAG_DISCORD].put(
+                {
+                    "reply": f"[{self.server_config.display_name}]已清除所有指令。",
+                    "args": {
+                        "type": "chat",
+                        "target": self.server_config.discord.chat_channel
+                    }
+                }
+            )
     
     def _save(
         self,
