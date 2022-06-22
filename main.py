@@ -3,9 +3,9 @@ import logging
 from modules.config import Config
 from modules.logging_config import set_logging
 from modules.threading import Thread
-from threading import current_thread
+import threading
 from time import sleep
-
+threading.active_count
 set_logging()
 
 logger = logging.getLogger("main")
@@ -16,6 +16,9 @@ if Config.readied == False:
     exit()
 
 if __name__ == "__main__":
-    current_thread().name = "Discord_Bot"
     client = Custom_Client()
-    client.run()
+
+    discord_thread = Thread(target=client.run(), name="Discord_Bot")
+    while True:
+        logger.debug(f"Thread:{''.join([thread.name for thread in threading.enumerate()])}")
+        sleep(1)

@@ -76,7 +76,7 @@ class Custom_Client(Client):
         logger.info(f"[{message.channel.name}][{message.author.display_name}]{content}")
 
         # 判斷並移除開頭
-        if not content.startswith(Config.discord.prefixs): return
+        if not content.startswith(tuple(Config.discord.prefixs)): return
         for prefix in Config.discord.prefixs:
             if content.startswith(prefix):
                 content = content[len(prefix):]
