@@ -371,12 +371,12 @@ class Rcon_Session():
                     while True:
                         if not self.in_queue.empty():
                             requests = self.in_queue.get()
+                            tag = requests["tag"]
+                            need_reply = requests["need_reply"]
                             command = requests["command"]
                             logger.info(f"From:{_TAG_LIST[tag]} Receive Command:{command}")
                             reply = client.run(command)
                             requests["reply"] = reply
-                            tag = requests["tag"]
-                            need_reply = requests["need_reply"]
                             del requests["tag"]
                             del requests["need_reply"]
                             if need_reply:
