@@ -96,6 +96,7 @@ class _Ark_Server():
             self.clear_dino = _config["clear_dino"]
             from modules.rcon import Rcon_Session
             self.rcon_session = Rcon_Session(self)
+            print(self.key)
 
 class _Web_Console(dict):
     host: str
