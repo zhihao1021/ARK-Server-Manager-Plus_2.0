@@ -407,20 +407,23 @@ class Rcon_Session():
                     rmtree(join(backup_root_dir, dir_name), True, None)
 
         # 停止
-        if mode >= MODE_STOP:
-            while True:
-                save_finish = self.get(TAG_SYSTEM)
-                if save_finish != None:
-                    if save_finish.get("type") == "id_tag" and save_finish.get("content") == "Finish":
-                        break
-                sleep(_WHILE_SLEEP)
-            self.add("DoExit")
+        if mode < MODE_STOP:
+            return
+        while True:
+            save_finish = self.get(TAG_SYSTEM)
+            print(save_finish)
+            if save_finish != None:
+                if save_finish.get("type") == "id_tag" and save_finish.get("content") == "Finish":
+                    break
+            sleep(_WHILE_SLEEP)
+        self.add("DoExit")
 
         # 重啟
-        if mode >= MODE_RESTART:
-            while self.server_alive:
-                sleep(_WHILE_SLEEP)
-            self.start(tag)
+        if mode < MODE_RESTART:
+            return
+        while self.server_alive:
+            sleep(_WHILE_SLEEP)
+        self.start(tag)
     
     def _session(
         self,
