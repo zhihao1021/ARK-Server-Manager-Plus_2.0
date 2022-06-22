@@ -14,9 +14,9 @@ _CONFIG: dict
 modify_time = 0
 
 def _gen_config():
-    with open("config-example.json") as example_file:
+    with open("config-example.json", mode="rb") as example_file:
         EXAMPLE_DATA = example_file.read()
-    with open("config.json", mode="w", encoding="utf-8") as config_file:
+    with open("config.json", mode="wb") as config_file:
         config_file.write(EXAMPLE_DATA)
     Config.update()
     sleep(1)
