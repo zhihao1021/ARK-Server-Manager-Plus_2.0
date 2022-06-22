@@ -36,7 +36,7 @@ class Custom_Client(Client):
         logger.info("state_update Start.")
         while True:
             await self._state_update()
-            await a_sleep(60)
+            await a_sleep(30)
 
     async def _state_update(self):
         for server_config in Config.servers:
