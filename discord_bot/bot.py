@@ -130,7 +130,7 @@ class Custom_Client(Client):
                 #     target = message.channel.id
                 rcon_session.add(" ".join(content_list[1:]), TAG_DISCORD, {"type": "user_command", "target": target})
         elif content_list[0] == "m":
-            if content_list[1] == "config" and time() - self.main_thread_command_time < 15:
+            if content_list[1] == "confirm" and time() - self.main_thread_command_time < 15:
                 if self.main_thread_command == "stop":
                     stop()
                 elif self.main_thread_command == "restart":
