@@ -77,6 +77,7 @@ class _Ark_Server():
     rcon_session = None
     def __init__(self, _config: dict) -> None:
         self.update(_config)
+        print(f"ARK COnfig {_config}")
 
     @classmethod
     def update(self, _config=None):
@@ -172,7 +173,6 @@ class Config:
             except IndexError:
                 self.servers.append(_Ark_Server(_CONFIG["servers"][i]))
                 print(f"Config append {i} {_CONFIG['servers'][i]}")
-            print(f"Config {i}")
         self.web_console = _Web_Console(_CONFIG["web_console"])
         self.time_setting = _Time_Setting(_CONFIG["time_setting"])
         self.other_setting = _Other_Setting(_CONFIG["other_setting"])
