@@ -10,7 +10,7 @@ class My_Datetime:
         
         return: :class:`datetime`
         """
-        while not Config.readied: sleep(0.1)
+        while not Config.updated: sleep(0.1)
         return datetime.now(Config.time_setting.time_zone).replace(tzinfo=None)
 
     def in_range(
