@@ -112,14 +112,15 @@ class _Time_Data(list[str, bool]):
 
 class _Time_Setting(dict):
     time_zone: d_timezone
-    save_delay: d_timedelta
+    save_delay: int
     save_tables: dict[list[_Time_Data]] = {}
     restart_tables: dict[list[_Time_Data]] = {}
+    backup_day: d_timedelta
     def __init__(self, _config: dict) -> None:
         for item in _config.items():
             self[item[0]] = item[1]
         self.time_zone = d_timezone(d_timedelta(hours=_config["time_zone"]))
-        self.save_delay = d_timedelta(minutes=_config["save_delay"])
+        self.save_delay = _config["save_delay"]
         _save_tables: dict = _config["save_tables"]
         for key in _save_tables.keys():
             time_data = _save_tables[key]
@@ -128,6 +129,7 @@ class _Time_Setting(dict):
         for key in _save_tables.keys():
             time_data = _restart_tables[key]
             self.restart_tables[key] = [_Time_Data(__config) for __config in time_data]
+        self.backup_day = d_timedelta(days=_config["backup_day"])
 
 class _Other_Setting(dict):
     low_battery: int

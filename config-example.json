@@ -6,13 +6,13 @@
   },
   "servers": [
     {
-      "key": "",
+      "key": "Server1",
       "local": true,
-      "dir_path": "",
-      "file_name": "",
-      "display_name": "",
+      "dir_path": "C:\\asmdata\\Serrvers\\Server1",
+      "file_name": "Ragnarok.ark",
+      "display_name": "Ragnarok",
       "rcon": {
-        "address": "0.0.0.0",
+        "address": "127.0.0.1",
         "port": 0,
         "password": "",
         "timeout": 60,
@@ -50,10 +50,11 @@
       "0": [
         ["03:00:00", true]
       ]
-    }
+    },
+    "backup_day": 3
   },
   "other_setting": {
-    "low_battery": 20,
+    "low_battery": 30,
     "m_filter_tables": {
       "0": {
         "startswith": [

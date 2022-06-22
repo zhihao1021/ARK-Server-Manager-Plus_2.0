@@ -1,12 +1,14 @@
 import logging
 from modules.config import Config, _Ark_Server
+from modules.datetime import My_Datetime
 from modules.queue import Queue
 from modules.threading import Thread
-from os import system
-from os.path import join
+from os import system, makedirs, listdir
+from os.path import join, isdir
 from rcon.source import Client
+from shutil import copyfile, copytree, rmtree
 from subprocess import Popen, PIPE, DEVNULL
-from time import time, sleep
+from time import sleep
 from typing import Optional, Union
 
 logger = logging.getLogger("main")
@@ -19,9 +21,9 @@ TAG_SYSTEM = 2
 
 _MODE_LIST = ["save", "stop", "restart"]
 _MODE_LIST_ZH = ["儲存", "關閉", "重啟"]
-MOD_SAVE = 0
-MOD_STOP = 1
-MOD_RESTART = 2
+MODE_SAVE = 0
+MODE_STOP = 1
+MODE_RESTART = 2
 
 def tag_verify(tag: int) -> bool:
     """
@@ -47,7 +49,7 @@ def _text_retouch(text: str):
 def _text_verify(text: str, ban_dict: dict):
     if len(ban_dict["startswith"]) != 0:
         if text.startswith(tuple(ban_dict["startswith"])): return False
-    for string in  len(ban_dict["include"]):
+    for string in  ban_dict["include"]:
         if string in text: return False
     if len(ban_dict["endswith"]) != 0:
         if text.endswith(tuple(ban_dict["endswith"])): return False
@@ -86,7 +88,7 @@ class Rcon_Session():
     """
     def __init__(
         self,
-        num: int = -1
+        num: int=-1
     ) -> None:
         """
         初始化`Rcon_Session()`
@@ -195,23 +197,29 @@ class Rcon_Session():
     def save(
         self,
         tag: int,
-        delay: int = 0
+        backup: bool,
+        delay: int=0,
+        reason: str=""
     ) -> None:
-        return self._save(tag, MOD_SAVE, delay)
+        return self._save(tag, backup, MODE_SAVE, delay, reason)
 
     def stop(
         self,
         tag: int,
-        delay: int = 0
+        backup: bool,
+        delay: int=0,
+        reason: str=""
     ) -> None:
-        return self._save(tag, MOD_STOP, delay)
+        return self._save(tag, backup, MODE_STOP, delay, reason)
     
     def restart(
         self,
         tag: int,
-        delay: int = 0
+        backup: bool,
+        delay: int=0,
+        reason: str=""
     ) -> None:
-        return self._save(tag, MOD_RESTART, delay)
+        return self._save(tag, backup, MODE_RESTART, delay, reason)
 
     def start(
         self,
@@ -229,7 +237,7 @@ class Rcon_Session():
                     }
                 )
             return
-        _cmd_path = join(self.server_config.dir_path, 'ShooterGame\\Saved\\Config\\WindowsServer\\RunServer.cmd')
+        _cmd_path = join(self.server_config.dir_path, "ShooterGame\\Saved\\Config\\WindowsServer\\RunServer.cmd")
         with open(_cmd_path, mode="r", encoding="utf-8") as _cmd_file:
             command_content = _cmd_file.read()
             _cmd_file.close()
@@ -257,13 +265,15 @@ class Rcon_Session():
     def _save(
         self,
         tag: int,
+        backup: bool,
         mode: int,
-        delay: int
+        delay: int,
+        reason: str
     ) -> None:
         if not tag_verify(tag):
             return
         if self.rcon_alive and not self.save_thread.is_alive():
-            self.save_thread = Thread(target=self._save_job, args=(tag, mode, delay), name=f"RCON_{self.server_config.display_name}_{_MODE_LIST[mode].upper()}")
+            self.save_thread = Thread(target=self._save_job, args=(tag, backup, mode, delay, reason), name=f"RCON_{self.server_config.display_name}_{_MODE_LIST[mode].upper()}")
             self.save_thread.start()
         elif tag == TAG_DISCORD:
             if not self.rcon_alive:
@@ -290,10 +300,12 @@ class Rcon_Session():
     def _save_job(
         self,
         tag: int,
+        backup: bool,
         mode: int,
-        delay: int
+        delay: int,
+        reason: str
     ) -> None:
-        logger.info(f"From:{_TAG_LIST[tag]} Receive Command:{_MODE_LIST[mode]} {delay}")
+        logger.info(f"From:{_TAG_LIST[tag]} Receive Command:{_MODE_LIST[mode]} {delay} Reason:{reason}")
         def _rcon_test():
             if not self.rcon_alive:
                 self.queues[TAG_DISCORD].put(
@@ -306,6 +318,24 @@ class Rcon_Session():
                     }
                 )
                 logger.warning("儲存失敗: RCON失去連線。")
+        if reason != "" and delay >= 1:
+            ark_message = Config.other_setting.message[_MODE_LIST[mode]].replace('$TIME', str(delay))
+            ark_message += f"\n原因:{reason}\nReason:{reason}"
+            self.add(f"Broadcast {ark_message}", TAG_SYSTEM, reply=False)
+            _discord_message = f"\n[{self.server_config.display_name}]".join(Config.other_setting.message[_MODE_LIST[mode]].replace("$TIME", str(delay)).split("\n"))
+            _discord_message += f"\n[{self.server_config.display_name}]原因:{reason}\n[{self.server_config.display_name}]Reason:{reason}"
+            self.queues[TAG_DISCORD].put(
+                {
+                    "reply": f"[{self.server_config.display_name}]{_discord_message}",
+                    "args": {
+                        "type": "chat",
+                        "target": self.server_config.discord.chat_channel
+                    }
+                }
+            )
+            sleep(60)
+            delay -= 1
+        # 通知
         while delay > 0:
             _rcon_test()
             if (delay %5 == 0 and delay <= 30) or delay < 5:
@@ -333,14 +363,41 @@ class Rcon_Session():
                 }
             }
         )
+
+        # 存檔
         if self.server_config.clear_dino:
             with open("classlist", mode="r", encoding="0") as class_file:
                 class_list = class_file.read().split("\n")
             for class_name in class_list:
                 self.add(f"DestroyWildDinoClasses \"{class_name}\" 1", TAG_SYSTEM, reply=False)
             self.add(f"DestroyWildDinos", TAG_SYSTEM, reply=False)
-            self.add("save", TAG_SYSTEM, {"type": "id_tag", "content": "Finish"})
-        if mode >= MOD_STOP:
+        self.add("save", TAG_SYSTEM, {"type": "id_tag", "content": "Finish"})
+
+        if backup:
+            source_dir = join(self.server_config.dir_path, "ShooterGame\\SavedArks\\Saved")
+            backup_dir = join(self.server_config.dir_path, "ShooterGame\\SavedArks\\Backup", My_Datetime.fileformat())
+            backup_root_dir = join(self.server_config.dir_path, "ShooterGame\\SavedArks\\Backup")
+            if not isdir(backup_dir):
+                makedirs(backup_dir)
+            source_file = join(source_dir, self.server_config.file_name)
+            backup_file = join(backup_dir, self.server_config.file_name)
+            copyfile(source_file, backup_file)
+            for filename in listdir(source_dir):
+                if filename.endswith((".arkprofile", "arktribe", "arktributetribe")):
+                    source_file = join(source_dir, filename)
+                    backup_file = join(backup_dir, filename)
+                    copyfile(source_file, backup_file)
+                elif filename == "ServerPaintingsCache":
+                    source_file = join(source_dir, filename)
+                    backup_file = join(backup_dir, filename)
+                    copytree(source_file, backup_file, dirs_exist_ok=True)
+            timeout_date = (My_Datetime.now() - Config.time_setting.backup_day).isoformat().split("T")[0]
+            for dir_name in listdir(backup_root_dir):
+                if timeout_date in dir_name:
+                    rmtree(join(backup_root_dir, dir_name), True, None)
+
+        # 停止
+        if mode >= MODE_STOP:
             while True:
                 save_finish = self.get(TAG_SYSTEM)
                 if save_finish != None:
@@ -348,7 +405,9 @@ class Rcon_Session():
                         break
                 sleep(_WHILE_SLEEP)
             self.add("DoExit")
-        if mode >= MOD_RESTART:
+
+        # 重啟
+        if mode >= MODE_RESTART:
             while self.server_alive:
                 sleep(_WHILE_SLEEP)
             self.start(tag)

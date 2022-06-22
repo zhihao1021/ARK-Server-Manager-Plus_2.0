@@ -1,5 +1,6 @@
+filelock
 flask
 orjson
+psutil
 py-cord>=2.0.0rc1
 rcon
-filelock

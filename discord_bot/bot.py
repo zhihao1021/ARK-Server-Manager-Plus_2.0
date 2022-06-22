@@ -1,5 +1,5 @@
 from asyncio import sleep as a_sleep
-from discord import Message, Intents
+from discord import Message, Intents, Emoji
 from discord.client import Client
 import logging
 from modules.config import Config, _Ark_Server
@@ -33,7 +33,6 @@ class Custom_Client(Client):
             logger.warning("Discord Bot Reonnected!")
 
     async def state_update(self):
-        server_config: _Ark_Server
         logger.info("state_update Start.")
         while True:
             for server_config in Config.servers:
@@ -41,36 +40,35 @@ class Custom_Client(Client):
                 state_channel = self.get_channel(server_config.discord.state_channel)
                 # :red_circle: :green_circle: :orange_circle:
                 if rcon_session.rcon_alive:
-                    state_message = ":green_circle: 運作中"
+                    state_message = "🟢 運作中"
                 else:
                     if rcon_session.server_alive:
                         if rcon_session.server_first_connect:
-                            state_message = ":orange_circle: 正在啟動中"
+                            state_message = "🔵 正在啟動中"
                         else:
-                            state_message = ":warning: RCON失去連線"
+                            state_message = "🟡 RCON失去連線"
                     else:
-                        state_message = ":red_circle: 未開啟"
+                        state_message = "🔴 未開啟"
                 await state_channel.edit(name=state_message)
             await a_sleep(60)
 
     async def chat_update(self):
         logger.info("chat_update Start.")
         while True:
-            print(Config.servers[0].key)
             for server_config in Config.servers:
                 rcon_session: Rcon_Session = server_config.rcon_session
                 mes = rcon_session.get(TAG_DISCORD)
-                arg = mes["args"]
-                logger.debug(f"Arg:{arg}")
-                if arg["type"] == "chat":
-                    channel = self.get_channel(arg["target"])
-                    await channel.send(mes["reply"])
-                elif arg["type"] == "user_command":
-                    if type(arg["target"]) == int:
+                if mes != None:
+                    arg = mes["args"]
+                    if arg["type"] == "chat":
                         channel = self.get_channel(arg["target"])
                         await channel.send(mes["reply"])
-                    else:
-                        await arg["target"].send(mes["reply"])
+                    elif arg["type"] == "user_command":
+                        if type(arg["target"]) == int:
+                            channel = self.get_channel(arg["target"])
+                            await channel.send(mes["reply"])
+                        else:
+                            await arg["target"].send(mes["reply"])
             await a_sleep(0.5)
 
     async def on_message(self, message: Message):
