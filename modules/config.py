@@ -162,10 +162,9 @@ class Config:
         self.discord = _Discord_Config(_CONFIG["discord"])
         i = 0
         for _config in _CONFIG["servers"]:
-            try:
-                from modules.rcon import Rcon_Session
+            if len(self.servers) > i:
                 self.servers[i] = Rcon_Session(self.servers[i])
-            except IndexError:
+            else:
                 self.servers.append(_Ark_Server(_config))
             i += 1
         self.web_console = _Web_Console(_CONFIG["web_console"])
@@ -184,6 +183,7 @@ def auto_update():
     else:
         Config.update()
     Config.ready(True)
+    from modules.rcon import Rcon_Session
     while True:
         if getmtime("config.json") != modify_time:
             Config.update()
