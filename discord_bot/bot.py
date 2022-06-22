@@ -35,22 +35,25 @@ class Custom_Client(Client):
     async def state_update(self):
         logger.info("state_update Start.")
         while True:
-            for server_config in Config.servers:
-                rcon_session: Rcon_Session = server_config.rcon_session
-                state_channel = self.get_channel(server_config.discord.state_channel)
-                # :red_circle: :green_circle: :orange_circle:
-                if rcon_session.rcon_alive:
-                    state_message = "🟢 運作中"
-                else:
-                    if rcon_session.server_alive:
-                        if rcon_session.server_first_connect:
-                            state_message = "🔵 正在啟動中"
-                        else:
-                            state_message = "🟡 RCON失去連線"
-                    else:
-                        state_message = "🔴 未開啟"
-                await state_channel.edit(name=state_message)
+            await self._state_update()
             await a_sleep(60)
+
+    async def _state_update(self):
+        for server_config in Config.servers:
+            rcon_session: Rcon_Session = server_config.rcon_session
+            state_channel = self.get_channel(server_config.discord.state_channel)
+            # :red_circle: :green_circle: :orange_circle:
+            if rcon_session.rcon_alive:
+                state_message = "🟢 運作中"
+            else:
+                if rcon_session.server_alive:
+                    if rcon_session.server_first_connect:
+                        state_message = "🔵 正在啟動中"
+                    else:
+                        state_message = "🟡 RCON失去連線"
+                else:
+                    state_message = "🔴 未開啟"
+            await state_channel.edit(name=state_message)
 
     async def chat_update(self):
         logger.info("chat_update Start.")
@@ -112,6 +115,8 @@ class Custom_Client(Client):
                 # else:
                 #     target = message.channel.id
                 rcon_session.add(" ".join(content_list[1:]), TAG_DISCORD, {"type": "user_command", "target": target})
+        elif content_list[0] == "debug":
+            await self._state_update()
     
     async def on_disconnect(self):
         logger.warning("Discord Bot Disconnected!")
