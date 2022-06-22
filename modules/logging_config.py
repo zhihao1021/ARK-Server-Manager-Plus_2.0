@@ -18,10 +18,12 @@ def set_logging():
     midnight = time(0, 0, 0, 0, Config.time_setting.time_zone)
     if not isdir("logs"):
         mkdir("logs")
-    if not isdir("web-logs"):
-        mkdir("web-logs")
+    if not isdir("ark-logs"):
+        mkdir("ark-logs")
     if not isdir("discord-logs"):
         mkdir("discord-logs")
+    if not isdir("web-logs"):
+        mkdir("web-logs")
     dict_config = {
         "version": 1,
         "disable_existing_loggers": False,
@@ -45,6 +47,15 @@ def set_logging():
             "main_file_handler": {
                 "class" : "logging.handlers.TimedRotatingFileHandler",
                 "filename": "logs/log.log",
+                "formatter": "default",
+                "when": "D",
+                "interval": 1,
+                "encoding": "utf-8",
+                "atTime": midnight
+            },
+            "ark_file_handler": {
+                "class" : "logging.handlers.TimedRotatingFileHandler",
+                "filename": "ark-logs/discord.log",
                 "formatter": "default",
                 "when": "D",
                 "interval": 1,
@@ -78,6 +89,10 @@ def set_logging():
             "main": {
                 "level": Config.other_setting.log_level,
                 "handlers": ["default_handler", "main_file_handler"]
+            },
+            "ark": {
+                "level": Config.other_setting.log_level,
+                "handlers": ["default_handler", "ark_file_handler"]
             },
             "discord": {
                 "level": Config.other_setting.log_level,

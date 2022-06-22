@@ -12,6 +12,7 @@ from time import sleep
 from typing import Optional, Union
 
 logger = logging.getLogger("main")
+ark_logger = logging.getLogger("ark")
 
 _WHILE_SLEEP = 0.2
 _TAG_LIST = ["Discord", "Web", "System"]
@@ -448,14 +449,14 @@ class Rcon_Session():
                             tag = requests["tag"]
                             need_reply = requests["need_reply"]
                             command = requests["command"]
-                            logger.info(f"From:{_TAG_LIST[tag]} Receive Command:{command} Args:{requests.get('args', 'No Args')}")
+                            ark_logger.info(f"From:{_TAG_LIST[tag]} Receive Command:{command} Args:{requests.get('args', 'No Args')}")
                             reply = client.run(command)
                             requests["reply"] = reply
                             del requests["tag"]
                             del requests["need_reply"]
                             if need_reply:
                                 self.queues[tag].put(requests)
-                            logger.info(f"From:{_TAG_LIST[tag]} {command} Reply:{reply}")
+                            ark_logger.info(f"From:{_TAG_LIST[tag]} {command} Reply:{reply}")
 
                         # 取得聊天訊息
                         chat_message = client.run("GetChat")
@@ -468,7 +469,7 @@ class Rcon_Session():
                             message = _text_retouch(message)
                             if message == None:
                                 continue
-                            logger.info(message)
+                            ark_logger.info(message)
                             if _text_verify(message, Config.other_setting.m_filter_tables[config.m_filter]):
                                 # 修飾訊息
                                 if message.startswith("部落"):
