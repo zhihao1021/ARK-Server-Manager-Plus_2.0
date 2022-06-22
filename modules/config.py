@@ -62,7 +62,7 @@ class _Discord_Info(dict):
         self.state_channel = _config["state_channel"]
         self.message_forward = _config["message_forward"]
 
-class _Ark_Server(dict):
+class _Ark_Server():
     key: str
     local: bool
     dir_path: str
@@ -75,6 +75,12 @@ class _Ark_Server(dict):
     clear_dino: bool
     rcon_session = None
     def __init__(self, _config: dict) -> None:
+        self._config = _config
+        self.update()
+
+    @classmethod
+    def update(self):
+        _config = self._config
         for item in _config.items():
             self[item[0]] = item[1]
         self.key = _config["key"]
@@ -87,10 +93,9 @@ class _Ark_Server(dict):
         self.save = _config["save"]
         self.restart = _config["restart"]
         self.clear_dino = _config["clear_dino"]
-
-    @classmethod
-    def rcon_update(self, rcon_session):
-        self.rcon_session = rcon_session
+        if Config.readied:
+            from modules.rcon import Rcon_Session
+            self.rcon_session = Rcon_Session(self)
 
 class _Web_Console(dict):
     host: str
@@ -161,11 +166,10 @@ class Config:
         self.config = _CONFIG.copy()
         self.discord = _Discord_Config(_CONFIG["discord"])
         for i in range(len(_CONFIG["servers"])):
-            if len(self.servers) < len(_CONFIG["servers"]):
+            try:
+                self.servers[i].update()
+            except IndexError:
                 self.servers.append(_Ark_Server(_CONFIG["servers"][i]))
-            if self.readied and self.servers[i].rcon_session == None:
-                from modules.rcon import Rcon_Session
-                Rcon_Session(i)
         self.web_console = _Web_Console(_CONFIG["web_console"])
         self.time_setting = _Time_Setting(_CONFIG["time_setting"])
         self.other_setting = _Other_Setting(_CONFIG["other_setting"])
@@ -182,6 +186,7 @@ def auto_update():
     else:
         Config.update()
     Config.ready(True)
+    Config.update()
     while True:
         if getmtime("config.json") != modify_time:
             Config.update()

@@ -89,7 +89,7 @@ class Rcon_Session():
     """
     def __init__(
         self,
-        num: int=-1
+        server_config: _Ark_Server
     ) -> None:
         """
         初始化`Rcon_Session()`
@@ -107,10 +107,9 @@ class Rcon_Session():
         self.rcon_alive = False
         self.server_alive = False
         self.server_first_connect = True
-        self.server_config: _Ark_Server = Config.servers[num]
+        self.server_config: _Ark_Server = server_config
         session_thread = Thread(target=self._session, name=f"RCON_{self.server_config.display_name}")
         session_thread.start()
-        Config.servers[num].rcon_update(self)
 
         self.save_thread = Thread()
 
