@@ -340,7 +340,7 @@ class Rcon_Session():
             _rcon_test()
             if (delay %5 == 0 and delay <= 30) or delay < 5:
                 self.add(f"Broadcast {Config.other_setting.message[_MODE_LIST[mode]].replace('$TIME', str(delay))}", TAG_SYSTEM, reply=False)
-                _discord_message = f"[{self.server_config.display_name}]".join(Config.other_setting.message[_MODE_LIST[mode]].replace("$TIME", str(delay)).split("\n"))
+                _discord_message = f"\n[{self.server_config.display_name}]".join(Config.other_setting.message[_MODE_LIST[mode]].replace("$TIME", str(delay)).split("\n"))
                 self.queues[TAG_DISCORD].put(
                     {
                         "reply": f"[{self.server_config.display_name}]{_discord_message}",
@@ -353,7 +353,7 @@ class Rcon_Session():
             sleep(60)
             delay -= 1
         self.add(f"Broadcast {Config.other_setting.message['saving'].replace('$TIME', str(delay))}", TAG_SYSTEM, reply=False)
-        _discord_message = f"[{self.server_config.display_name}]".join(Config.other_setting.message["saving"].replace("$TIME", str(delay)).split("\n"))
+        _discord_message = f"\n[{self.server_config.display_name}]".join(Config.other_setting.message["saving"].replace("$TIME", str(delay)).split("\n"))
         self.queues[TAG_DISCORD].put(
             {
                 "reply": f"[{self.server_config.display_name}]{_discord_message}",

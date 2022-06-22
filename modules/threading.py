@@ -1,5 +1,6 @@
 import threading, ctypes
 from time import sleep
+from os import system
 class Thread(threading.Thread):
     """
     可停止式線程。
@@ -20,6 +21,14 @@ def _auto_kill():
             thread.stop()
             thread.join()
     threading.current_thread()
+
+def restart():
+    thr = threading.main_thread()
+    system("start cmd /c \"Start.cmd\"")
+    if not thr.is_alive() or thr.ident == None: raise threading.ThreadError("The thread is not active.")
+    elif ctypes.pythonapi.PyThreadState_SetAsyncExc(thr.ident, ctypes.py_object(SystemExit)) == 1: return
+    ctypes.pythonapi.PyThreadState_SetAsyncExc(thr.ident, 0)
+    raise SystemError("PyThreadState_SetAsyncExc failed")
 
 _auto_kill_thread = Thread(target=_auto_kill, name="AutoKillThread")
 _auto_kill_thread.start()

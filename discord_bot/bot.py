@@ -1,9 +1,10 @@
 from asyncio import sleep as a_sleep
-from discord import Message, Intents, Emoji
+from discord import Message, Intents
 from discord.client import Client
 import logging
 from modules.config import Config, _Ark_Server
 from modules.rcon import Rcon_Session, TAG_DISCORD
+from modules.threading import restart
 from time import time
 from typing import Union
 
@@ -123,7 +124,10 @@ class Custom_Client(Client):
                 # else:
                 #     target = message.channel.id
                 rcon_session.add(" ".join(content_list[1:]), TAG_DISCORD, {"type": "user_command", "target": target})
-        elif content_list[0] == "debug":
+        elif content_list[0] == "m":
+            if content_list[1] == "restart":
+                restart()
+        elif content_list[0] == "debug" and message.author.id == 302774180611358720:
             await self._state_update()
     
     async def on_disconnect(self):
