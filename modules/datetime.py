@@ -1,4 +1,5 @@
 from datetime import datetime, time, timedelta
+from time import sleep
 from typing import Union
 from modules.config import Config
 
@@ -9,6 +10,7 @@ class My_Datetime:
         
         return: :class:`datetime`
         """
+        while not Config.readied: sleep(0.1)
         return datetime.now(Config.time_setting.time_zone).replace(tzinfo=None)
 
     def in_range(
