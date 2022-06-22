@@ -58,24 +58,19 @@ class Custom_Client(Client):
         while True:
             for server_config in Config.servers:
                 rcon_session: Rcon_Session = server_config.rcon_session
-                start_time = time()
-                message_list = {}
-                while time() - start_time < 1:
-                    mes = rcon_session.get(TAG_DISCORD)
-                    arg = mes["args"]
-                    logger.debug(arg)
-                    if arg["type"] == "chat":
-                        message_list[int(arg["target"])] = mes["reply"]
-                    elif arg["type"] == "user_command":
-                        if type(arg["target"]) == str or type(arg["target"]) == int:
-                            channel = self.get_channel(int(arg["target"]))
-                            await channel.send(mes.get("reply"))
-                        else:
-                            await arg["target"].send(mes.get("reply"))
-                for channel_id, message in message_list.items():
-                    channel = self.get_channel(channel_id)
-                    await channel.send(message)
-            # await a_sleep(1)
+                mes = rcon_session.get(TAG_DISCORD)
+                arg = mes["args"]
+                logger.debug(arg)
+                if arg["type"] == "chat":
+                    channel = self.get_channel(arg["target"])
+                    await channel.send(mes["reply"])
+                elif arg["type"] == "user_command":
+                    if type(arg["target"]) == int:
+                        channel = self.get_channel(arg["target"])
+                        await channel.send(mes["reply"])
+                    else:
+                        await arg["target"].send(mes["reply"])
+            await a_sleep(0.5)
 
     async def on_message(self, message: Message):
         if message.author == self.user: return

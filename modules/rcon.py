@@ -438,7 +438,8 @@ class Rcon_Session():
                             client.run("")
                 except SystemExit:
                     raise SystemExit
-                except:
+                except Exception as e:
+                    logger.debug(f"RCON Exception: {e}")
                     self.rcon_alive = False
                     logger.warning("RCON Disconnected!")
                     while True:
