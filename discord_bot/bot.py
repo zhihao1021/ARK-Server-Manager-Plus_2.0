@@ -25,6 +25,8 @@ class Custom_Client(Client):
     async def on_ready(self):
         if self.first_connect:
             logger.warning("Discord Bot Connected!")
+            self.bg_task_1 = self.loop.create_task(self.state_update())
+            self.bg_task_2 = self.loop.create_task(self.chat_update())
         else:
             logger.warning("Discord Bot Reonnected!")
 
