@@ -80,20 +80,20 @@ class _Ark_Server():
 
     @classmethod
     def update(self):
-        _config = self._config
-        for item in _config.items():
-            self[item[0]] = item[1]
-        self.key = _config["key"]
-        self.local = _config["local"]
-        self.dir_path = _config["dir_path"]
-        self.file_name = _config["file_name"]
-        self.display_name = _config["display_name"]
-        self.rcon = _Rcon_Info(_config["rcon"])
-        self.discord = _Discord_Info(_config["discord"])
-        self.save = _config["save"]
-        self.restart = _config["restart"]
-        self.clear_dino = _config["clear_dino"]
         if Config.readied:
+            _config = self._config
+            for item in _config.items():
+                self[item[0]] = item[1]
+            self.key = _config["key"]
+            self.local = _config["local"]
+            self.dir_path = _config["dir_path"]
+            self.file_name = _config["file_name"]
+            self.display_name = _config["display_name"]
+            self.rcon = _Rcon_Info(_config["rcon"])
+            self.discord = _Discord_Info(_config["discord"])
+            self.save = _config["save"]
+            self.restart = _config["restart"]
+            self.clear_dino = _config["clear_dino"]
             from modules.rcon import Rcon_Session
             self.rcon_session = Rcon_Session(self)
 
