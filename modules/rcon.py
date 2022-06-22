@@ -99,21 +99,20 @@ class Rcon_Session():
 
         return: :class:`None`
         """
-        if Config.servers[num].rcon_session == None:
-            self.in_queue = Queue()
-            self.queues: list[Queue] = []
-            for _ in _TAG_LIST:
-                self.queues.append(Queue())
+        self.in_queue = Queue()
+        self.queues: list[Queue] = []
+        for _ in _TAG_LIST:
+            self.queues.append(Queue())
 
-            self.rcon_alive = False
-            self.server_alive = False
-            self.server_first_connect = True
-            self.server_config: _Ark_Server = Config.servers[num]
-            session_thread = Thread(target=self._session, name=f"RCON_{self.server_config.display_name}")
-            session_thread.start()
-            Config.servers[num].rcon_update(self)
+        self.rcon_alive = False
+        self.server_alive = False
+        self.server_first_connect = True
+        self.server_config: _Ark_Server = Config.servers[num]
+        session_thread = Thread(target=self._session, name=f"RCON_{self.server_config.display_name}")
+        session_thread.start()
+        Config.servers[num].rcon_update(self)
 
-            self.save_thread = Thread()
+        self.save_thread = Thread()
 
     def add(
         self,
