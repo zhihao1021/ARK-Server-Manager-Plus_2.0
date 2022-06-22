@@ -126,7 +126,7 @@ class _Time_Setting(dict):
             time_data = _save_tables[key]
             self.save_tables[key] = [_Time_Data(__config) for __config in time_data]
         _restart_tables: dict = _config["restart_tables"]
-        for key in _save_tables.keys():
+        for key in _restart_tables.keys():
             time_data = _restart_tables[key]
             self.restart_tables[key] = [_Time_Data(__config) for __config in time_data]
         self.backup_day = d_timedelta(days=_config["backup_day"])
