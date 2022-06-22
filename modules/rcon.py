@@ -428,6 +428,7 @@ class Rcon_Session():
     def _session(
         self,
     ):
+        logger.info(f"RCON_{self.server_config.display_name} Start")
         config = self.server_config.rcon
         while True:
             try:
