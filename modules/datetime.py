@@ -34,9 +34,8 @@ class My_Datetime:
         if type(target) == str:
             target = time.fromisoformat(target)
         target.replace(tzinfo=None)
-        target -= offset
         now_time = My_Datetime.now()
-        start_time = datetime.combine(now_time.date(), target) + delay
+        start_time = datetime.combine(now_time.date(), target) + delay + offset
         end_time = start_time + time_range
         return now_time >= start_time and now_time <= end_time
     
