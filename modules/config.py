@@ -160,11 +160,12 @@ class Config:
 
         self.config = _CONFIG.copy()
         self.discord = _Discord_Config(_CONFIG["discord"])
-        for _config in _CONFIG["servers"]:
-            self.servers.append(_Ark_Server(_config))
-            if self.readied and self.servers[-1].rcon_session == None:
-                from modules.rcon import Rcon_Session
-                Rcon_Session()
+        if len(self.servers) < len(_CONFIG["servers"]):
+            for i in range(len(_CONFIG["servers"])):
+                self.servers.append(_Ark_Server(_CONFIG["servers"][i]))
+                if self.readied and self.servers[i].rcon_session == None:
+                    from modules.rcon import Rcon_Session
+                    Rcon_Session(i)
         self.web_console = _Web_Console(_CONFIG["web_console"])
         self.time_setting = _Time_Setting(_CONFIG["time_setting"])
         self.other_setting = _Other_Setting(_CONFIG["other_setting"])
