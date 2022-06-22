@@ -63,6 +63,7 @@ class _Discord_Info(dict):
         self.message_forward = _config["message_forward"]
 
 class _Ark_Server():
+    _config: dict
     key: str
     local: bool
     dir_path: str
