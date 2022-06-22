@@ -188,7 +188,9 @@ class Rcon_Session():
         target_queue = self.queues[tag]
         if target_queue.empty():
             return None
-        return target_queue.get()
+        data = target_queue.get()
+        logger.debug(f"Reply Command: {data}")
+        return data
     
     def save(
         self,

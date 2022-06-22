@@ -25,6 +25,7 @@ class Custom_Client(Client):
 
     async def on_ready(self):
         if self.first_connect:
+            self.first_connect = False
             logger.warning("Discord Bot Connected!")
             self.bg_task_1 = self.loop.create_task(self.state_update())
             self.bg_task_2 = self.loop.create_task(self.chat_update())
@@ -33,6 +34,7 @@ class Custom_Client(Client):
 
     async def state_update(self):
         server_config: _Ark_Server
+        logger.info("state_update Start.")
         while True:
             for server_config in Config.servers:
                 rcon_session: Rcon_Session = server_config.rcon_session
@@ -52,6 +54,7 @@ class Custom_Client(Client):
             await a_sleep(60)
 
     async def chat_update(self):
+        logger.info("chat_update Start.")
         while True:
             for server_config in Config.servers:
                 rcon_session: Rcon_Session = server_config.rcon_session
@@ -59,15 +62,16 @@ class Custom_Client(Client):
                 message_list = {}
                 while time() - start_time < 1:
                     mes = rcon_session.get(TAG_DISCORD)
-                    arg = mes.get("args")
+                    arg = mes["args"]
+                    logger.debug(arg)
                     if arg["type"] == "chat":
-                        message_list[int(arg["target"])] = mes.get("reply")
+                        message_list[int(arg["target"])] = mes["reply"]
                     elif arg["type"] == "user_command":
                         if type(arg["target"]) == str or type(arg["target"]) == int:
                             channel = self.get_channel(int(arg["target"]))
+                            await channel.send(mes.get("reply"))
                         else:
-                            channel = arg["target"]
-                        await channel.send(mes.get("reply"))
+                            await arg["target"].send(mes.get("reply"))
                 for channel_id, message in message_list.items():
                     channel = self.get_channel(channel_id)
                     await channel.send(message)
