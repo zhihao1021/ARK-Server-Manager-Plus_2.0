@@ -1,5 +1,5 @@
 from asyncio import sleep as a_sleep
-from discord import Message
+from discord import Message, Intents
 from discord.client import Client
 import logging
 from modules.config import Config, _Ark_Server
@@ -17,8 +17,9 @@ def _search_rcon(channel_id: int) -> Union[Rcon_Session, None]:
     return None
 
 class Custom_Client(Client):
-    def __init__(self, *args, **kargs):
-        super().__init__(*args, **kargs)
+    def __init__(self, *args, **kwargs):
+        intents = Intents.all()
+        super().__init__(*args, **kwargs, intents=intents)
         # print([logger.getLogger(name) for name in logger.root.manager.loggerDict])
         self.first_connect = True
 
