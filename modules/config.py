@@ -84,8 +84,6 @@ class _Ark_Server():
             self._config = _config
         if Config.readied:
             _config = self._config
-            for item in _config.items():
-                self[item[0]] = item[1]
             self.key = _config["key"]
             self.local = _config["local"]
             self.dir_path = _config["dir_path"]
