@@ -88,10 +88,6 @@ class _Ark_Server(dict):
         self.restart = _config["restart"]
         self.clear_dino = _config["clear_dino"]
 
-    @classmethod
-    def rcon_update(self, rcon_session):
-        self.rcon_session = rcon_session
-
 class _Web_Console(dict):
     host: str
     port: int

@@ -52,7 +52,7 @@ def auto_save():
 
 
 if __name__ == "__main__":
-    logger.info("Version: 1.0.5")
+    logger.info("Version: 1.1.0")
 
     client = Custom_Client()
 
