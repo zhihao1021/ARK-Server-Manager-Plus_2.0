@@ -411,9 +411,8 @@ class Rcon_Session():
             return
         while True:
             save_finish = self.get(TAG_SYSTEM)
-            print(save_finish)
             if save_finish != None:
-                if save_finish.get("type") == "id_tag" and save_finish.get("content") == "Finish":
+                if save_finish["args"].get("type") == "id_tag" and save_finish["args"].get("content") == "Finish":
                     break
             sleep(_WHILE_SLEEP)
         self.add("DoExit")
