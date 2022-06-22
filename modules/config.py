@@ -96,7 +96,6 @@ class _Ark_Server():
             self.clear_dino = _config["clear_dino"]
             from modules.rcon import Rcon_Session
             self.rcon_session = Rcon_Session(self)
-            print(self.key)
 
 class _Web_Console(dict):
     host: str
@@ -171,6 +170,7 @@ class Config:
                 self.servers[i].update()
             except IndexError:
                 self.servers.append(_Ark_Server(_CONFIG["servers"][i]))
+            print(f"Config {i} {self.servers[i].key}")
         self.web_console = _Web_Console(_CONFIG["web_console"])
         self.time_setting = _Time_Setting(_CONFIG["time_setting"])
         self.other_setting = _Other_Setting(_CONFIG["other_setting"])
