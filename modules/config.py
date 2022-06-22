@@ -164,7 +164,9 @@ class Config:
         for _config in _CONFIG["servers"]:
             if len(self.servers) > i:
                 from modules.rcon import Rcon_Session
-                self.servers[i] = Rcon_Session(self.servers[i])
+                self.servers[i].rcon_session = Rcon_Session(self.servers[i])
+                print(self.servers[i].rcon_session)
+                print(self.servers[i].key)
             else:
                 self.servers.append(_Ark_Server(_config))
             i += 1
