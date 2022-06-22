@@ -163,6 +163,7 @@ class Config:
         i = 0
         for _config in _CONFIG["servers"]:
             if len(self.servers) > i:
+                from modules.rcon import Rcon_Session
                 self.servers[i] = Rcon_Session(self.servers[i])
             else:
                 self.servers.append(_Ark_Server(_config))
@@ -183,7 +184,6 @@ def auto_update():
     else:
         Config.update()
     Config.ready(True)
-    from modules.rcon import Rcon_Session
     while True:
         if getmtime("config.json") != modify_time:
             Config.update()
