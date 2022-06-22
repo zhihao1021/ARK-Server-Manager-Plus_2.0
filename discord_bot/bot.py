@@ -94,7 +94,11 @@ class Custom_Client(Client):
         if content_list[0] == "del":
             await message.delete()
             content_list = content_list[1:]
-        if content_list[0] == "c":
+        if content_list[0] == "c" or content_list[0] == "cb":
+            if content_list[0] == "c":
+                backup = False
+            else:
+                backup = True
             rcon_session = _search_rcon(message.channel.id)
             delay = 0
             reason = ""
@@ -107,11 +111,11 @@ class Custom_Client(Client):
             if content_list[1] == "start":
                 rcon_session.start(TAG_DISCORD)
             elif content_list[1] == "stop":
-                rcon_session.stop(TAG_DISCORD, delay=delay, reason=reason)
+                rcon_session.stop(TAG_DISCORD, backup=backup, delay=delay, reason=reason)
             elif content_list[1] == "save":
-                rcon_session.save(TAG_DISCORD, delay=delay, reason=reason)
+                rcon_session.save(TAG_DISCORD, backup=backup, delay=delay, reason=reason)
             elif content_list[1] == "restart":
-                rcon_session.restart(TAG_DISCORD, delay=delay, reason=reason)
+                rcon_session.restart(TAG_DISCORD, backup=backup, delay=delay, reason=reason)
             else:
                 target = message.author
                 # if message.author.dm_channel.can_send():
