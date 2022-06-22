@@ -69,6 +69,7 @@ class Custom_Client(Client):
 
     async def on_message(self, message: Message):
         if message.author == self.user: return
+        logger.debug(f"[{message.channel.name}][{message.author.display_name}]{message.content}")
         if _search_rcon(message.channel.id) == None: return
         if Config.discord.admin_role not in [role.id for role in message.author.roles]: return
 
