@@ -52,6 +52,8 @@ def auto_save():
 
 
 if __name__ == "__main__":
+    logger.info("Version: 1.0.0")
+
     client = Custom_Client()
 
     discord_thread = Thread(target=client.run, name="Discord_Bot")
