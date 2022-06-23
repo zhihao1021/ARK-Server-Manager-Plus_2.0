@@ -25,6 +25,24 @@ def _gen_config():
     Config.ready(False)
     current_thread().stop()
 
+def _config_patch():
+    EXAMPLE_DATA = Json.load("config-example.json")
+    CONFIG_DATA = Json.load(_FILE_PATH)
+    Json.dump("config.json", __patch(EXAMPLE_DATA, CONFIG_DATA))
+
+def __patch(example: dict, config: dict):
+    example = example.copy()
+    config = config.copy()
+    for key, value in example.items():
+        try:
+            c_value = config[key]
+            if type(c_value) == dict:
+                c_value = __patch(value, c_value)
+                config[key] = c_value
+        except KeyError:
+            config[key] = value
+    return config
+
 class _Discord_Config(dict):
     token: str
     prefixs: list[str] = []
@@ -132,6 +150,7 @@ class _Other_Setting(dict):
     m_filter_tables: dict[dict[list[str]]] = {}
     log_level: str
     message: dict[str] = {}
+    state_message: dict[str] = {}
     def __init__(self, _config: dict):
         for item in _config.items():
             self[item[0]] = item[1]
@@ -139,6 +158,7 @@ class _Other_Setting(dict):
         self.m_filter_tables = _config["m_filter_tables"].copy()
         self.log_level = _config["log_level"]
         self.message = _config["message"]
+        self.state_message = _config["state_message"]
 
 class Config:
     discord: _Discord_Config
@@ -152,6 +172,7 @@ class Config:
     @classmethod
     def update(self):
         global _CONFIG
+        _config_patch()
         _CONFIG = Json.load(_FILE_PATH)
 
         self.config = _CONFIG.copy()

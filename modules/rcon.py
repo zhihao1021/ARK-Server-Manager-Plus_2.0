@@ -1,5 +1,5 @@
 import logging
-from modules.config import Config, _Ark_Server
+from modules.config import Config, _Ark_Server, _Rcon_Info
 from modules.datetime import My_Datetime
 from modules.queue import Queue
 from modules.threading import Thread
@@ -136,7 +136,7 @@ class Rcon_Session():
         """
         if not tag_verify(tag):
             return None
-        if not self.rcon_alive:
+        if self.rcon_alive == False:
             if tag == TAG_DISCORD:
                 self.queues[TAG_DISCORD].put(
                     {
@@ -281,11 +281,11 @@ class Rcon_Session():
     ) -> None:
         if not tag_verify(tag):
             return
-        if self.rcon_alive and not self.save_thread.is_alive():
+        if self.rcon_alive != False and not self.save_thread.is_alive():
             self.save_thread = Thread(target=self._save_job, args=(tag, backup, mode, delay, reason), name=f"RCON_{self.server_config.display_name}_{_MODE_LIST[mode].upper()}")
             self.save_thread.start()
         elif tag == TAG_DISCORD:
-            if not self.rcon_alive:
+            if self.rcon_alive != False:
                 self.queues[TAG_DISCORD].put(
                     {
                         "reply": f"[{self.server_config.display_name}]RCON 未連線，無法{_MODE_LIST_ZH[mode]}。",
@@ -316,7 +316,7 @@ class Rcon_Session():
     ) -> None:
         logger.info(f"From:{_TAG_LIST[tag]} Receive Command:{_MODE_LIST[mode]} {delay} Reason:{reason}")
         def _rcon_test():
-            if not self.rcon_alive:
+            if self.rcon_alive != False:
                 self.queues[TAG_DISCORD].put(
                     {
                         "reply": f"[{self.server_config.display_name}]儲存失敗: RCON失去連線。",
@@ -428,12 +428,13 @@ class Rcon_Session():
     ):
         logger.info(f"RCON_{self.server_config.display_name} Start")
         config = self.server_config.rcon
+        _ip_address = config.address
         while True:
             try:
                 if not self.server_alive:
                     self.in_queue.clear()
                 with Client(
-                    host=config.address,
+                    host=_ip_address,
                     port=config.port,
                     timeout=config.timeout,
                     passwd=config.password
@@ -498,43 +499,60 @@ class Rcon_Session():
                 raise SystemExit
             except Exception as e:
                 logger.debug(f"RCON Exception: {e}")
-                try:
-                    # 閃斷測試
-                    for _ in range(5):
-                        sleep(1)
-                        with Client(
-                            host=config.address,
-                            port=config.port,
-                            timeout=config.timeout,
-                            passwd=config.password
-                        ) as client:
-                            client.run("")
-                except SystemExit:
-                    raise SystemExit
-                except:
-                    self.rcon_alive = False
-                    logger.warning("RCON Disconnected!")
-                    while True:
-                        try:
-                            if _ark_is_alive(self.server_config.dir_path) and not self.server_alive:
-                                self.server_alive = True
-                                logger.warning("Server Up!")
-                            # 嘗試重連
-                            with Client(
-                                host=config.address,
-                                port=config.port,
-                                timeout=config.timeout,
-                                passwd=config.password
-                            ) as client:
-                                client.run("")
-                                break
-                        except SystemExit:
-                            raise SystemExit
-                        except:
-                            if not _ark_is_alive(self.server_config.dir_path) and self.server_alive:
-                                self.server_alive = False
-                                logger.warning("Server Down!")
-                        sleep(_WHILE_SLEEP)
+                _ip_address = self._session_connect(config)
+
+    def _session_connect(self, config: _Rcon_Info) -> str:
+        # 閃斷測試
+        for _ in range(5):
+            try:
+                with Client(
+                    host=config.address,
+                    port=config.port,
+                    timeout=config.timeout,
+                    passwd=config.password
+                ) as client:
+                    client.run("")
+                    return config.address
+            except SystemError: raise SystemError
+            except: sleep(1)
+        # 本地端測試
+        try:
+            with Client(
+                host="127.0.0.1",
+                port=config.port,
+                timeout=config.timeout,
+                passwd=config.password
+            ) as client:
+                client.run("")
+                self.rcon_alive = None
+                self.clear(TAG_SYSTEM)
+                self.stop(TAG_DISCORD, False, 1)
+                return "127.0.0.1"
+        except SystemError: raise SystemError
+        except: pass
+        self.rcon_alive = False
+        logger.warning("RCON Disconnected!")
+        while True:
+            try:
+                if _ark_is_alive(self.server_config.dir_path) and not self.server_alive:
+                    self.server_alive = True
+                    logger.warning("Server Up!")
+                # 嘗試重連
+                with Client(
+                    host=config.address,
+                    port=config.port,
+                    timeout=config.timeout,
+                    passwd=config.password
+                ) as client:
+                    client.run("")
+                    return config.address
+            except SystemExit:
+                raise SystemExit
+            except:
+                if not _ark_is_alive(self.server_config.dir_path) and self.server_alive:
+                    self.server_alive = False
+                    logger.warning("Server Down!")
+            sleep(_WHILE_SLEEP)
 
 # if (remove_message(conv_string)): 
 # if conv_string.startswith("部落"):

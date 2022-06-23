@@ -46,17 +46,20 @@ class Custom_Client(Client):
             rcon_session: Rcon_Session = server_config.rcon_session
             # :red_circle: :green_circle: :orange_circle:
             if rcon_session.rcon_alive:
-                state_message = "🟢 運作中"
+                state_message = Config.other_setting.state_message["rinning"]
             else:
                 if rcon_session.server_alive:
                     if rcon_session.server_first_connect:
-                        state_message = "🔵 正在啟動中"
+                        state_message = Config.other_setting.state_message["starting"]
+                    elif rcon_session.rcon_alive == None:
+                        state_message = Config.other_setting.state_message["network_disconnect"]
                     else:
-                        state_message = "🟡 RCON失去連線"
+                        state_message = Config.other_setting.state_message["rcon_disconnect"]
                 else:
-                    state_message = "🔴 未開啟"
+                    state_message = Config.other_setting.state_message["stopped"]
             state_channel = self.get_channel(server_config.discord.state_channel)
-            await state_channel.edit(name=state_message)
+            if state_channel.name != state_message:
+                await state_channel.edit(name=state_message)
 
     async def chat_update(self):
         logger.info("chat_update Start.")

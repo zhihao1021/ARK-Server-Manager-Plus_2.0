@@ -91,6 +91,13 @@
       "stop": "伺服器將於 $TIME 分鐘後關閉。\nServer will shutdown in $TIME min.",
       "restart": "伺服器將於 $TIME 分鐘後重啟。\nServer will restart in $TIME min.",
       "saving": "儲存中...\nSaving..."
+    },
+    "state_message": {
+      "running": "🟢 運作中",
+      "stopped": "🔴 未開啟",
+      "starting": "🔵 正在啟動中",
+      "rcon_disconnect": "🟡 RCON失去連線",
+      "network_disconnect": "🟠 對外失去連線"
     }
   }
 }
