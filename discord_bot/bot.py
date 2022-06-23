@@ -38,6 +38,7 @@ class Custom_Client(Client):
     async def state_update(self):
         logger.info("state_update Start.")
         while True:
+            logger.info("Update Statechannel Name.")
             await self._state_update()
             await a_sleep(10)
 
@@ -61,7 +62,6 @@ class Custom_Client(Client):
                 else:
                     state_message = Config.other_setting.state_message["stopped"]
             state_channel = self.get_channel(server_config.discord.state_channel)
-            logger.info("Update Statechannel Name.")
             await state_channel.edit(name=state_message)
 
     async def chat_update(self):
