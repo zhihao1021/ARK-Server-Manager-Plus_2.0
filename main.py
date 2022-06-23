@@ -65,7 +65,7 @@ if __name__ == "__main__":
     auto_save_thread.start()
 
     console_thread = Thread(target=console.run(), name="Web_Console")
-    console_thread.start()
+    # console_thread.start()
 
     discord_thread = Thread(target=client.run, name="Discord_Bot")
     discord_thread.start()
