@@ -61,8 +61,8 @@ class Custom_Client(Client):
                 else:
                     state_message = Config.other_setting.state_message["stopped"]
             state_channel = self.get_channel(server_config.discord.state_channel)
-            if state_channel.name != state_message:
-                await state_channel.edit(name=state_message)
+            logger.info("Update Statechannel Name.")
+            await state_channel.edit(name=state_message)
 
     async def chat_update(self):
         """
