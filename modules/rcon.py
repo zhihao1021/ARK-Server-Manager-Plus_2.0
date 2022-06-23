@@ -350,9 +350,11 @@ class Rcon_Session():
         if not tag_verify(tag):
             return 
         self.in_queue.clear()
-        if self.save_thread.is_alive():
+        try:
             self.save_thread.stop()
-        logger.warning(f"清除所有指令。(來自{_TAG_LIST[tag]})")
+        except SystemExit: raise SystemExit
+        except Exception as e: pass
+        logger.warning(f"清除所有指令。(來自{_TAG_LIST[tag]}) Exception: {e}")
         if tag == TAG_DISCORD:
             self.queues[TAG_DISCORD].put(
                 {
