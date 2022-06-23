@@ -1,1 +1,59 @@
-@import url(global.css)
+@import url(global.css);
+
+#content {
+    display: flex;
+    flex-direction: row
+}
+
+.table {
+    height: 100%;
+    width: fit-content;
+    margin: 8px;
+    display: flex;
+    flex-direction: column;
+}
+
+.info {
+    flex: 0;
+    height: 100%;
+    width: 100%;
+    margin: 8px;
+}
+
+.row {
+    flex: 1;
+    display: flex;
+    height: 100%;
+    flex-direction: row;
+    margin: 8px;
+}
+
+.card {
+    flex: 1;
+    height: 100%;
+    width: 340px;
+    margin: 0px 8px;
+    background-color: transparent;
+    border-style: solid;
+    border-width: 1px;
+    border-color: rgb(44, 44, 44);
+    border-radius: 8px;
+}
+
+.card svg {
+    width: 280px;
+    height: 280px;
+    transform: rotate(-90deg);
+    position: relative;
+    left: calc(50% - 140px);
+    top: calc(50% - 140px);
+    fill: transparent;
+    stroke-width: 4px;
+    stroke-linecap: round;
+    stroke: rgb(16, 16, 16);
+}
+.card svg circle:nth-child(2) {
+    stroke: var(--color);
+    stroke-dasharray: 855;
+    stroke-dashoffset: calc(855 - (855 * var(--percent)/100));
+}

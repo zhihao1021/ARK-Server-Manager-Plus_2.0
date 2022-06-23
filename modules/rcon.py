@@ -8,6 +8,7 @@ from os.path import join, isdir
 from rcon.source import Client
 from shutil import copyfile, copytree, rmtree
 from subprocess import Popen, PIPE, DEVNULL
+from threading import current_thread
 from time import sleep
 from typing import Optional, Union
 
@@ -440,7 +441,7 @@ class Rcon_Session():
         """
         logger.info(f"From:{_TAG_LIST[tag]} Receive Command:{_MODE_LIST[mode]} {delay} Reason:{reason}")
         def _rcon_test():
-            if self.rcon_alive != False:
+            if self.rcon_alive == False:
                 self.queues[TAG_DISCORD].put(
                     {
                         "reply": f"[{self.server_config.display_name}]儲存失敗: RCON失去連線。",
@@ -451,6 +452,7 @@ class Rcon_Session():
                     }
                 )
                 logger.warning("儲存失敗: RCON失去連線。")
+                current_thread().stop()
         if reason != "" and delay >= 1:
             ark_message = Config.other_setting.message[_MODE_LIST[mode]].replace('$TIME', str(delay))
             ark_message += f"\n原因:{reason}\nReason:{reason}"
