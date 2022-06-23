@@ -56,7 +56,7 @@ def auto_save():
 
 
 if __name__ == "__main__":
-    logger.info("Version: 1.2.0")
+    logger.info("Version: 1.3.0")
 
     client = Custom_Client()
     console = Console()
