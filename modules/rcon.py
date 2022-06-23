@@ -526,7 +526,7 @@ class Rcon_Session():
                 client.run("")
                 self.rcon_alive = None
                 self.clear(TAG_SYSTEM)
-                self.stop(TAG_DISCORD, False, 1)
+                self.stop(TAG_SYSTEM, False, 1)
                 return "127.0.0.1"
         except SystemError: raise SystemError
         except: pass
