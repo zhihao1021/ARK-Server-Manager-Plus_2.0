@@ -31,13 +31,21 @@ def tag_verify(tag: int) -> bool:
     驗證發起者識別標籤。
 
     tag: :class:`int`
-        發起者識別標籤
+        發起者識別標籤。
     
     return: :class:`bool`
     """
     return tag in range(len(_TAG_LIST))
 
-def _text_retouch(text: str):
+def _text_retouch(text: str) -> Union[str, None]:
+    """
+    修正字串前後空白。
+
+    text: :class:`str`
+        輸入字串。
+
+    return: :class:`str | None`
+    """
     if text == "": return None
     while text[0] == " ":
         text = text[1:]
@@ -47,7 +55,17 @@ def _text_retouch(text: str):
         if text == "": return None
     return text
 
-def _text_verify(text: str, ban_dict: dict):
+def _text_verify(text: str, ban_dict: dict) -> bool:
+    """
+    過濾字串。
+
+    text: :class:`str`
+        輸入字串。
+    ban_dict: :class:`dict`
+        過濾字典。
+    
+    return: :class:`bool`
+    """
     if len(ban_dict["startswith"]) != 0:
         if text.startswith(tuple(ban_dict["startswith"])): return False
     for string in  ban_dict["include"]:
@@ -56,7 +74,15 @@ def _text_verify(text: str, ban_dict: dict):
         if text.endswith(tuple(ban_dict["endswith"])): return False
     return True
 
-def _process_info(name: str="") -> list | None:
+def _process_info(name: str="") -> Union[list, None]:
+    """
+    取得程序資訊。
+
+    name: :class:`str`
+        程序名稱。
+    
+    return: :class:`list | None`
+    """
     raw_info = Popen(f"wmic process where (name=\"{name}\") get name, executablepath, processid", shell=False, stdout=PIPE, stderr=DEVNULL).stdout.read().decode("utf-8").split("\r\r\n")[:-2]
     if "ExecutablePath" in raw_info[0] and "Name" in raw_info[0] and "ProcessId" in raw_info[0]:
         s_path = raw_info[0].find("ExecutablePath")
@@ -77,6 +103,14 @@ def _process_info(name: str="") -> list | None:
         return None
 
 def _ark_is_alive(path: str) -> bool:
+    """
+    檢查ARK Server是否正在運行。
+
+    path: :class:`str`
+        ARK 執行檔路徑。
+
+    return: :class:`bool`
+    """
     alive_list = _process_info("ShooterGameServer.exe")
     for alive_process in alive_list:
         if path in alive_process["Path"]:
@@ -200,6 +234,20 @@ class Rcon_Session():
         delay: int=0,
         reason: str=""
     ) -> None:
+        """
+        進行存檔。
+        
+        tag: :class:`int`
+            發起者識別標籤。
+        backup: :class:`bool`
+            存檔後是否進行備份。
+        delay: :class:`int`
+            倒數時間(分鐘)。
+        reason: :class:`str`
+            原因。
+
+        return: :class:`None`
+        """
         return self._save(tag, backup, MODE_SAVE, delay, reason)
 
     def stop(
@@ -209,6 +257,20 @@ class Rcon_Session():
         delay: int=0,
         reason: str=""
     ) -> None:
+        """
+        進行關閉。
+        
+        tag: :class:`int`
+            發起者識別標籤。
+        backup: :class:`bool`
+            關閉後是否進行備份。
+        delay: :class:`int`
+            倒數時間(分鐘)。
+        reason: :class:`str`
+            原因。
+
+        return: :class:`None`
+        """
         return self._save(tag, backup, MODE_STOP, delay, reason)
     
     def restart(
@@ -218,12 +280,34 @@ class Rcon_Session():
         delay: int=0,
         reason: str=""
     ) -> None:
+        """
+        進行重啟。
+        
+        tag: :class:`int`
+            發起者識別標籤。
+        backup: :class:`bool`
+            關閉後是否進行備份。
+        delay: :class:`int`
+            倒數時間(分鐘)。
+        reason: :class:`str`
+            原因。
+
+        return: :class:`None`
+        """
         return self._save(tag, backup, MODE_RESTART, delay, reason)
 
     def start(
         self,
         tag: int
     ) -> None:
+        """
+        啟動伺服器。
+        
+        tag: :class:`int`
+            發起者識別標籤。
+
+        return: :class:`None`
+        """
         if self.server_alive:
             if tag == TAG_DISCORD:
                 self.queues[TAG_DISCORD].put(
@@ -254,6 +338,14 @@ class Rcon_Session():
         self,
         tag: int
     ) -> None:
+        """
+        清除當前所有命令與停止存檔線程。
+        
+        tag: :class:`int`
+            發起者識別標籤。
+
+        return: :class:`None`
+        """
         if not tag_verify(tag):
             return 
         self.in_queue.clear()
@@ -279,6 +371,22 @@ class Rcon_Session():
         delay: int,
         reason: str
     ) -> None:
+        """
+        驗證是否可進行存檔、關機與重啟。
+        
+        tag: :class:`int`
+            發起者識別標籤。
+        backup: :class:`bool`
+            存檔後是否進行備份。
+        mode: :class:`int`
+            模式。
+        delay: :class:`int`
+            倒數時間(分鐘)。
+        reason: :class:`str`
+            原因。
+
+        return: :class:`dict | None`
+        """
         if not tag_verify(tag):
             return
         if self.rcon_alive != False and not self.save_thread.is_alive():
@@ -314,6 +422,22 @@ class Rcon_Session():
         delay: int,
         reason: str
     ) -> None:
+        """
+        進行存檔、關機與重啟。
+        
+        tag: :class:`int`
+            發起者識別標籤。
+        backup: :class:`bool`
+            存檔後是否進行備份。
+        mode: :class:`int`
+            模式。
+        delay: :class:`int`
+            倒數時間(分鐘)。
+        reason: :class:`str`
+            原因。
+
+        return: :class:`dict | None`
+        """
         logger.info(f"From:{_TAG_LIST[tag]} Receive Command:{_MODE_LIST[mode]} {delay} Reason:{reason}")
         def _rcon_test():
             if self.rcon_alive != False:

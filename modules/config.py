@@ -14,6 +14,9 @@ _CONFIG: dict
 modify_time = 0
 
 def _gen_config():
+    """
+    如果沒有設置檔，則從範例中生成。
+    """
     with open("config-example.json", mode="rb") as example_file:
         EXAMPLE_DATA = example_file.read()
     with open("config.json", mode="wb") as config_file:
@@ -26,11 +29,17 @@ def _gen_config():
     current_thread().stop()
 
 def _config_patch():
+    """
+    設置檔完整度檢查。
+    """
     EXAMPLE_DATA = Json.load("config-example.json")
     CONFIG_DATA = Json.load(_FILE_PATH)
     Json.dump("config.json", __patch(EXAMPLE_DATA, CONFIG_DATA))
 
 def __patch(example: dict, config: dict):
+    """
+    設置完整度修復。
+    """
     example = example.copy()
     config = config.copy()
     for key, value in example.items():
@@ -109,11 +118,13 @@ class _Ark_Server(dict):
 class _Web_Console(dict):
     host: str
     port: int
+    debug: bool
     def __init__(self, _config: dict) -> None:
         for item in _config.items():
             self[item[0]] = item[1]
         self.host = _config["host"]
         self.port = _config["port"]
+        self.debug = _config["debug"]
 
 class _Time_Data(list[str, bool]):
     time: d_time
@@ -171,6 +182,9 @@ class Config:
 
     @classmethod
     def update(self):
+        """
+        從設置檔中更新當前設置。
+        """
         global _CONFIG
         _config_patch()
         _CONFIG = Json.load(_FILE_PATH)
@@ -195,17 +209,23 @@ class Config:
         self.readied = value
 
 def auto_update():
+    """
+    自動更新設置檔。
+    """
     global modify_time
+    # 檢查檔案是否存在
     if not isfile(_FILE_PATH):
         _gen_config()
     else:
         Config.update()
+    # 準備完成
     Config.ready(True)
     while True:
+        # 檢查設置檔修改時間
         if getmtime("config.json") != modify_time:
             Config.update()
             modify_time = getmtime("config.json")
         sleep(1)
 
-auto_update_thread = Thread(target=auto_update, name="ConfigAutoUpdateThread")
+auto_update_thread = Thread(target=auto_update, name="Config_Auto_Update")
 auto_update_thread.start()

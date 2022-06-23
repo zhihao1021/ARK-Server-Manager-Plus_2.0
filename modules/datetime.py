@@ -23,11 +23,13 @@ class My_Datetime:
         查看當前時間是否等於目標時間。
 
         target: :class:`str | time`
-            當前所在時區
+            當前所在時區。
         delay: :class:`timedelta`
-            延遲
+            延遲(秒)。
+        offset: :class:`timedelta`
+            提前(分鐘)。
         time_range: :class:`timedelta`
-            誤差範圍
+            誤差範圍。
         
         return: :class:`bool`
         """

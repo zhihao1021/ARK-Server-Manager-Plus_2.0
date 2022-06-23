@@ -5,7 +5,7 @@ class Thread(threading.Thread):
     """
     可停止式線程。
     新增:
-     - stop():強制停止線程
+     - stop(): 強制停止線程。
     """
     def stop(self):
         if not self.is_alive() or self.ident == None: raise threading.ThreadError("The thread is not active.")

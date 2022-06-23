@@ -6,19 +6,23 @@ from modules.logging_config import set_logging
 from modules.rcon import Rcon_Session, TAG_SYSTEM
 from modules.threading import Thread
 import psutil
-import threading
 from time import sleep
-threading.active_count
+from web_console.console import Console
+
 set_logging()
 
 logger = logging.getLogger("main")
 
+# 檢查設置檔。
 while Config.readied == None: sleep(0.1)
 if Config.readied == False:
     input("Press any key to exit...")
     exit()
 
 def auto_save():
+    """
+    自動存檔計時。
+    """
     timedata: _Time_Data
     while True:
         # 存檔
@@ -55,12 +59,16 @@ if __name__ == "__main__":
     logger.info("Version: 1.2.0")
 
     client = Custom_Client()
-
-    discord_thread = Thread(target=client.run, name="Discord_Bot")
-    discord_thread.start()
+    console = Console()
 
     auto_save_thread = Thread(target=auto_save, name="Auto_Save")
     auto_save_thread.start()
+
+    console_thread = Thread(target=console.run(), name="Web_Console")
+    console_thread.start()
+
+    discord_thread = Thread(target=client.run, name="Discord_Bot")
+    discord_thread.start()
 
     BATTERY = psutil.sensors_battery()
     auto_save_thread = Thread()

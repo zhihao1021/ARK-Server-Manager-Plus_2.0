@@ -42,6 +42,9 @@ class Custom_Client(Client):
             await a_sleep(10)
 
     async def _state_update(self):
+        """
+        自動更新狀態頻道。
+        """
         for server_config in Config.servers:
             rcon_session: Rcon_Session = server_config.rcon_session
             # :red_circle: :green_circle: :orange_circle:
@@ -62,6 +65,9 @@ class Custom_Client(Client):
                 await state_channel.edit(name=state_message)
 
     async def chat_update(self):
+        """
+        聊天同步。
+        """
         logger.info("chat_update Start.")
         while True:
             for server_config in Config.servers:
@@ -106,7 +112,7 @@ class Custom_Client(Client):
             else:
                 backup = True
             rcon_session = _search_rcon(message.channel.id)
-            delay = 0
+            delay = 5
             reason = ""
             try: delay = int(content_list[2])
             except ValueError: pass
