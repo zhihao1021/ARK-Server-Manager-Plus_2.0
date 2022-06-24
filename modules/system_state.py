@@ -20,8 +20,8 @@ class State:
         sleep(1)
         end_time = time()
         end_net_io = psutil.net_io_counters()
-        self.upload_speed = (end_net_io.bytes_sent - start_net_io.bytes_sent) / (end_time - start_time)
-        self.download_speed = (end_net_io.bytes_recv - start_net_io.bytes_recv) / (end_time - start_time)
+        self.upload_speed = (end_net_io.bytes_sent - start_net_io.bytes_sent) / (2 * (end_time - start_time))
+        self.download_speed = (end_net_io.bytes_recv - start_net_io.bytes_recv) / (2 * (end_time - start_time))
         self.config = {
             "cpu_percent": self.cpu_percent,
             "ram_percent": self.ram_percent,
