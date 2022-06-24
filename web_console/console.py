@@ -2,6 +2,7 @@ from flask import Flask, render_template, redirect, request, Request, url_for
 import logging
 from modules.config import Config
 from modules.json import Json
+from modules.system_state import State
 
 logger = logging.getLogger("main")
 
@@ -36,6 +37,10 @@ class Console():
     @app.route("/data")
     def data():
         return render_template("data.html")
+    
+    @app.route("/api/v1.0/system_state")
+    def api_system_state():
+        return State.request_config
     
     def run(self):
         self.app.run(

@@ -5,19 +5,38 @@
     flex-direction: row
 }
 
+hr {
+    width: 0px;
+    height: 100%;
+    border-style: solid;
+    border-width: 1px;
+    border-color: rgb(44, 44, 44);
+    margin: 0px;
+}
+
 .table {
     height: 100%;
     width: fit-content;
     margin: 8px;
+    margin-right: 0px;
     display: flex;
     flex-direction: column;
 }
 
 .info {
-    flex: 0;
+    flex: 1;
     height: 100%;
     width: 100%;
     margin: 8px;
+}
+
+.t_title {
+    color: rgb(255, 255, 255);
+    font-size: 30px;
+}
+.t_title p {
+    margin: 0px;
+    margin-left: 16px;
 }
 
 .row {
@@ -41,19 +60,140 @@
 }
 
 .card svg {
-    width: 280px;
-    height: 280px;
+    width: 284px;
+    height: 284px;
     transform: rotate(-90deg);
     position: relative;
-    left: calc(50% - 140px);
-    top: calc(50% - 140px);
+    left: calc(50% - 142px);
+    top: calc(50% - 142px);
     fill: transparent;
     stroke-width: 4px;
     stroke-linecap: round;
     stroke: rgb(16, 16, 16);
+    filter: drop-shadow(0px 0px 3px rgb(16, 16, 16));
 }
 .card svg circle:nth-child(2) {
     stroke: var(--color);
     stroke-dasharray: 855;
-    stroke-dashoffset: calc(855 - (855 * var(--percent)/100));
+    stroke-dashoffset: calc(854 - (854 * var(--percent)/100));
+    filter: drop-shadow(0px 0px 3px var(--color));
+}
+.row .card:nth-child(2) svg circle:nth-child(2) {
+    stroke-dashoffset: calc(854 - (854 * var(--percent)/(15728640 * 100)));
+}
+
+.card .display {
+    position: relative;
+    top: -135px;
+    text-align: center;
+}
+.card .display p {
+    margin: 0px;
+    height: fit-content;
+    text-shadow: 0px 0px 8px var(--shadow);
+    color: var(--color);
+}
+.card .display p:nth-child(1) {
+    font-size: 40px;
+}
+.card .display p:nth-child(2) {
+    font-size: 25px;
+}
+
+.info .info_content {
+    border-style: solid;
+    border-width: 1px;
+    border-color: rgb(44, 44, 44);
+    border-radius: 8px;
+    margin: 8px;
+    color: rgb(255, 255, 255);
+    padding: 4px 12px 12px 12px;
+}
+
+.info .info_content hr {
+    width: 100%;
+    height: 0px;
+    border-style: solid;
+    border-width: 1px;
+    border-color: rgb(44, 44, 44);
+    margin: 4px 0px;
+}
+
+.info .info_title {
+    font-size: 22px;
+    margin: 4px;
+}
+.info .info_card {
+    margin: 0px;
+}
+
+.info .info_card p {
+    font-size: 18px;
+    margin: 4px;
+}
+.info .info_card .info_item {
+    display: flex;
+    flex-direction: row;
+    margin-left: 24px;
+}
+.info .info_card .info_item a {
+    text-decoration: none;
+    color: rgb(255, 255, 255);
+    display: flex;
+    flex-direction: column;
+    justify-items: center;
+    margin: 4px;
+}
+.info .info_card .info_item .steam_link {
+    align-items: center;
+    flex-direction: row;
+    color: rgb(44, 44, 44);
+    padding: 0px 12px 0px 12px;
+    text-align: center;
+    border-style: solid;
+    border-color: rgb(44, 44, 44);
+    border-radius: 6px;
+    border-width: 2px;
+    background-color: transparent;
+    transition: all 0.5s;
+}
+.info .info_card .info_item .steam_link:hover {
+    color: rgb(255, 255, 255);
+    background-color: rgb(44, 44, 44);
+}
+.info .info_card .info_item a {
+    align-self: center;
+    padding: auto;
+}
+.info .info_card iframe{
+    height: 400px;
+    margin: 0px 4px;
+}
+
+@media (max-aspect-ratio: 1/1) {
+    #content {
+        flex-direction: column;
+        flex-flow: column-reverse;
+    }
+
+    hr {
+        width: 100%;
+        height: 0px;
+        border-style: solid;
+        border-width: 1px;
+        border-color: rgb(44, 44, 44);
+        margin: 0px;
+    }
+
+    .row {
+        flex-direction: column;
+        width: min-content;
+        gap: 8px;
+        margin-top: 4px;
+        margin-bottom: 4px;
+    }
+
+    .card {
+        width: min-content;
+    }
 }

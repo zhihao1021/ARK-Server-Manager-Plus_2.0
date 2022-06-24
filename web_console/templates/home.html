@@ -3,10 +3,11 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0">
-        <link rel="icon" href="../static/img/favicon.ico">
+        <!-- <link rel="icon" href="../static/img/favicon.ico"> -->
         <link rel="stylesheet" href="../static/css/home.css">
         <script src="../static/js/include-html.js"></script>
         <script src="../static/js/side-bar.js"></script>
+        <script src="../static/js/home.js"></script>
         <title>Test</title>
     </head>
     <body>
@@ -14,39 +15,94 @@
         <div id="side-bar" include-html="side-bar.html"></div>
         <div id="content">
             <div class="table">
+                <div class="t_title">
+                    <p class="font"><b>Server State</b></p>
+                </div>
                 <div class="row">
-                    <div class="card">
+                    <div class="card" id="cpu">
                         <svg>
-                            <circle cx="140" cy="140" r="132"></circle>
-                            <circle cx="140" cy="140" r="132" style="--color:rgb(10, 240, 40);--percent:50"></circle>
+                            <circle cx="142" cy="142" r="132"></circle>
+                            <circle cx="142" cy="142" r="132" style="--color:rgb(5, 205, 255);--percent:0"></circle>
                         </svg>
+                        <div class="cfont display" style="--shadow:rgb(50, 250, 255, 0.7);--color:rgb(50, 250, 255);">
+                            <p>0 %</p>
+                            <p>CPU</p>
+                        </div>
                     </div>
-                    <div class="card">
+                    <div class="card" id="download">
                         <svg>
-                            <circle cx="140" cy="140" r="132"></circle>
-                            <circle cx="140" cy="140" r="132" style="--color:rgb(6, 205, 255);--percent:90"></circle>
+                            <circle cx="142" cy="142" r="132"></circle>
+                            <circle cx="142" cy="142" r="132" style="--color:rgb(10, 240, 40);--percent:0"></circle>
                         </svg>
+                        <div class="cfont display" style="--shadow:rgb(55, 255, 85, 0.7);--color:rgb(55, 255, 85);">
+                            <p>0 B/s</p>
+                            <p>Download</p>
+                        </div>
                     </div>
                 </div>
                 <div class="row">
-                    <div class="card">
+                    <div class="card" id="ram">
                         <svg>
                             <circle cx="140" cy="140" r="132"></circle>
-                            <circle cx="140" cy="140" r="132" style="--color:rgb(240, 10, 40);--percent:90"></circle>
+                            <circle cx="140" cy="140" r="132" style="--color:rgb(255, 230, 0);--percent:0"></circle>
                         </svg>
+                        <div class="cfont display" style="--shadow:rgb(255, 255, 45, 0.7);--color:rgb(255, 255, 45);">
+                            <p>0 %</p>
+                            <p>RAM</p>
+                        </div>
                     </div>
-                    <div class="card">
+                    <div class="card" id="upload">
                         <svg>
                             <circle cx="140" cy="140" r="132"></circle>
-                            <circle cx="140" cy="140" r="132" style="--color:rgb(255, 230, 0);--percent:90"></circle>
+                            <circle cx="140" cy="140" r="132" style="--color:rgb(240, 10, 40);--percent:0"></circle>
                         </svg>
+                        <div class="cfont display" style="--shadow:rgb(255, 55, 85, 0.7);--color:rgb(255, 55, 85);">
+                            <p>0 B/s</p>
+                            <p>Upload</p>
+                        </div>
                     </div>
                 </div>
             </div>
+            <hr>
             <div class="info">
-
+                <div class="t_title">
+                    <p class="font"><b>Server Info</b></p>
+                </div>
+                <div class="info_content">
+                    <p class="info_title cfont">Primal Fear恐懼服</p>
+                    <div class="info_card">
+                        <p class="info_map cfont">仙境 Ragnarok</p>
+                        <div class="info_item">
+                            <p class="cfont">- 連線位置 : </p>
+                            <a class="steam_link cfont" href="steam://connect/59.127.95.47:27015">Connect</a>
+                        </div>
+                        <div class="info_item">
+                            <p class="cfont">- 模組訂閱 : </p>
+                            <a target="_blank" href="https://steamcommunity.com/sharedfiles/filedetails/?id=2715886949"><img height="24px" src="https://community.akamai.steamstatic.com/public/shared/images/header/logo_steam.svg?"></a>
+                        </div>
+                    </div>
+                    <hr>
+                    <p class="info_title cfont">DOX服</p>
+                    <div class="info_card">
+                        <p class="info_map cfont">Fjordur</p>
+                        <div class="info_item">
+                            <p class="cfont">- 連線位置 : </p>
+                            <a class="steam_link cfont" href="steam://connect/59.127.95.47:27020">Connect</a>
+                        </div>
+                        <div class="info_item">
+                            <p class="cfont">- 模組訂閱 : </p>
+                            <a target="_blank" href="https://steamcommunity.com/sharedfiles/filedetails/?id=2825128557"><img height="24px" src="https://community.akamai.steamstatic.com/public/shared/images/header/logo_steam.svg?"></a>
+                        </div>
+                    </div>
+                    <hr>
+                    <p class="info_title cfont">加入Discord</p>
+                    <div class="info_card">
+                        <iframe src="https://discord.com/widget?id=864874953002057759&theme=dark" width="350" height="500" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
+                    </div>
+                </div>
             </div>
         </div>
     </body>
     <script>includeHTML()</script>
+    <script>onload()</script>
 </html>

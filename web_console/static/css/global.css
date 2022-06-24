@@ -14,7 +14,7 @@ body {
     height: 48px;
     text-align: left;
     color: rgb(255, 255, 255);
-    font-size: 2ezm;
+    font-size: 2em;
     margin: 12px 24px;
 }
 
@@ -27,12 +27,16 @@ body {
 }
 
 #content {
-    height: 100%;
+    height: 100%;;
     background-color: rgb(31, 31, 31);
-    padding: 16px;
+    padding: 8px;
     padding-top: 72px;
     padding-left: 48px;
     position:relative;
-    height: 100%;
-    width: calc(100% - 64px);
+}
+
+@media (max-aspect-ratio: 1/1) {
+    #content {
+        height: auto;
+    }
 }

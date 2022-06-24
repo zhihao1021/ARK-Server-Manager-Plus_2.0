@@ -6,7 +6,7 @@ class Json:
     基於orjson的改良版本。
     """
     def dumps(data: Any,
-        option: int=orjson.OPT_INDENT_2
+        option: Optional[int]=None
     ) -> str:
         """
         將`data`轉換為字串。
@@ -18,7 +18,8 @@ class Json:
 
         return: :class:`str`
         """
-        return orjson.dumps(data, option=option).decode('utf-8')
+        if option != None: return orjson.dumps(data, option=option).decode('utf-8')
+        return orjson.dumps(data).decode('utf-8')
 
     def loads(data: Union[bytes, bytearray, memoryview, str]) -> Any:
         """
