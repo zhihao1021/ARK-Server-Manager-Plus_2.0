@@ -1,5 +1,5 @@
 from asyncio import sleep as a_sleep
-from discord import Message, Intents
+from discord import Message, Intents, TextChannel
 from discord.client import Client
 import logging
 from modules.config import Config, _Ark_Server
@@ -39,7 +39,7 @@ class Custom_Client(Client):
         logger.info("state_update Start.")
         while True:
             await self._state_update()
-            await a_sleep(10)
+            await a_sleep(60)
 
     async def _state_update(self):
         """
@@ -74,18 +74,26 @@ class Custom_Client(Client):
             for server_config in Config.servers:
                 rcon_session: Rcon_Session = server_config.rcon_session
                 mes = rcon_session.get(TAG_DISCORD)
-                if mes != None:
+                channel: TextChannel = None
+                chat_content = None
+                while mes != None:
                     arg = mes["args"]
                     if arg["type"] == "chat":
-                        channel = self.get_channel(arg["target"])
-                        await channel.send(mes["reply"])
+                        if channel == None:
+                            channel = self.get_channel(arg["target"])
+                            chat_content = mes["reply"]
+                        else:
+                            chat_content += f"\n{mes['reply']}"
                     elif arg["type"] == "user_command":
                         if type(arg["target"]) == int:
                             channel = self.get_channel(arg["target"])
                             await channel.send(mes["reply"])
                         else:
                             await arg["target"].send(mes["reply"])
-            await a_sleep(0.5)
+                    mes = rcon_session.get(TAG_DISCORD)
+                if chat_content != None and channel != None:
+                    await channel.send(chat_content)
+                await a_sleep(1)
 
     async def on_message(self, message: Message):
         if message.author == self.user: return
