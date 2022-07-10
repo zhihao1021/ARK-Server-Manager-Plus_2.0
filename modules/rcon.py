@@ -373,9 +373,9 @@ class Rcon_Session():
         if not tag_verify(tag):
             return
         logger.info(f"From:{_TAG_LIST[tag]} Receive Command:backup")
-        source_dir = join(self.server_config.dir_path, "ShooterGame\\SavedArks\\Saved")
-        backup_dir = join(self.server_config.dir_path, "ShooterGame\\Backup\\SavedArks\\Saved", My_Datetime.fileformat())
-        backup_root_dir = join(self.server_config.dir_path, "ShooterGame\\Backup\\SavedArks\\Saved")
+        source_dir = join(self.server_config.dir_path, "ShooterGame\\Saved\\SavedArks")
+        backup_dir = join(self.server_config.dir_path, "ShooterGame\\Backup\\SavedArks", My_Datetime.fileformat())
+        backup_root_dir = join(self.server_config.dir_path, "ShooterGame\\Backup\\SavedArks")
         if not isdir(backup_dir):
             makedirs(backup_dir)
         source_file = join(source_dir, self.server_config.file_name)
