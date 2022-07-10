@@ -137,6 +137,8 @@ class Custom_Client(Client):
                 rcon_session.restart(TAG_DISCORD, backup=backup, delay=delay, reason=reason)
             elif content_list[1] == "clear":
                 rcon_session.clear(TAG_DISCORD)
+            elif content_list[1] == "backup":
+                rcon_session.backup(TAG_DISCORD)
             else:
                 target = message.author
                 # if message.author.dm_channel.can_send():

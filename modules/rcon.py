@@ -353,8 +353,8 @@ class Rcon_Session():
         try:
             self.save_thread.stop()
         except SystemExit: raise SystemExit
-        except Exception as e: pass
-        logger.warning(f"清除所有指令。(來自{_TAG_LIST[tag]}) Exception: {e}")
+        except Exception as e: logger.info(f"清除所有指令失敗。(來自{_TAG_LIST[tag]}) Exception: {e}")
+        logger.info(f"清除所有指令。(來自{_TAG_LIST[tag]})")
         if tag == TAG_DISCORD:
             self.queues[TAG_DISCORD].put(
                 {
@@ -366,6 +366,44 @@ class Rcon_Session():
                 }
             )
     
+    def backup(
+        self,
+        tag: int
+    ) -> None:
+        if not tag_verify(tag):
+            return
+        logger.info(f"From:{_TAG_LIST[tag]} Receive Command:backup")
+        source_dir = join(self.server_config.dir_path, "ShooterGame\\SavedArks\\Saved")
+        backup_dir = join(self.server_config.dir_path, "ShooterGame\\Backup\\SavedArks\\Saved", My_Datetime.fileformat())
+        backup_root_dir = join(self.server_config.dir_path, "ShooterGame\\Backup\\SavedArks\\Saved")
+        if not isdir(backup_dir):
+            makedirs(backup_dir)
+        source_file = join(source_dir, self.server_config.file_name)
+        backup_file = join(backup_dir, self.server_config.file_name)
+        copyfile(source_file, backup_file)
+        for filename in listdir(source_dir):
+            if filename.endswith((".arkprofile", "arktribe", "arktributetribe")):
+                source_file = join(source_dir, filename)
+                backup_file = join(backup_dir, filename)
+                copyfile(source_file, backup_file)
+            elif filename == "ServerPaintingsCache":
+                source_file = join(source_dir, filename)
+                backup_file = join(backup_dir, filename)
+                copytree(source_file, backup_file, dirs_exist_ok=True)
+        timeout_date = (My_Datetime.now() - Config.time_setting.backup_day).isoformat().split("T")[0]
+        for dir_name in listdir(backup_root_dir):
+            if timeout_date in dir_name:
+                rmtree(join(backup_root_dir, dir_name), True, None)
+        if tag == TAG_DISCORD:
+            self.queues[TAG_DISCORD].put(
+                {
+                    "reply": "備份完成。",
+                    "args": {
+                        "type": "chat",
+                        "target": self.server_config.discord.chat_channel
+                    }
+                }
+            )
     def _save(
         self,
         tag: int,
@@ -511,27 +549,7 @@ class Rcon_Session():
         self.add("save", TAG_SYSTEM, {"type": "id_tag", "content": "Finish"})
 
         if backup:
-            source_dir = join(self.server_config.dir_path, "ShooterGame\\SavedArks\\Saved")
-            backup_dir = join(self.server_config.dir_path, "ShooterGame\\SavedArks\\Backup", My_Datetime.fileformat())
-            backup_root_dir = join(self.server_config.dir_path, "ShooterGame\\SavedArks\\Backup")
-            if not isdir(backup_dir):
-                makedirs(backup_dir)
-            source_file = join(source_dir, self.server_config.file_name)
-            backup_file = join(backup_dir, self.server_config.file_name)
-            copyfile(source_file, backup_file)
-            for filename in listdir(source_dir):
-                if filename.endswith((".arkprofile", "arktribe", "arktributetribe")):
-                    source_file = join(source_dir, filename)
-                    backup_file = join(backup_dir, filename)
-                    copyfile(source_file, backup_file)
-                elif filename == "ServerPaintingsCache":
-                    source_file = join(source_dir, filename)
-                    backup_file = join(backup_dir, filename)
-                    copytree(source_file, backup_file, dirs_exist_ok=True)
-            timeout_date = (My_Datetime.now() - Config.time_setting.backup_day).isoformat().split("T")[0]
-            for dir_name in listdir(backup_root_dir):
-                if timeout_date in dir_name:
-                    rmtree(join(backup_root_dir, dir_name), True, None)
+            self.backup(tag)
 
         # 停止
         if mode < MODE_STOP:
