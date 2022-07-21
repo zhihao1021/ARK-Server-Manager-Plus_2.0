@@ -113,9 +113,10 @@ def _ark_is_alive(path: str) -> bool:
     return: :class:`bool`
     """
     alive_list = _process_info("ShooterGameServer.exe")
-    for alive_process in alive_list:
-        if path in alive_process["Path"]:
-            return True
+    if alive_list != None:
+        for alive_process in alive_list:
+            if path in alive_process["Path"]:
+                return True
     return False
 
 class Rcon_Session():
